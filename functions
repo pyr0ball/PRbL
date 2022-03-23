@@ -44,7 +44,7 @@ fi
 
 # Extra Unicode Character Manipulation
 return_arrow=$(echo -e '\u21B6')
-enter_arrow$(echo -e '\u21B5')
+enter_arrow=$(echo -e '\u21B5')
 
 # For drawing pretty boxes
 terminal_width=$(tput cols)
@@ -64,19 +64,21 @@ box-single(){
   right_top_border=$(echo -e '\u2513')
   left_bottom_border=$(echo -e '\u2517')
   right_bottom_border=$(echo -e '\u251b')
+  box_break_line=$(echo -e '\u25AB')
   # ---------------------------------------#
 }
 
 # Box border type double-line
 box-double(){
   # ---------------------------------------#
-  top_border=$(echo -e '\u2501')
-  left_border=$(echo -e '\u2503')
-  right_border=$(echo -e '\u2503')
-  left_top_border=$(echo -e '\u250f')
-  right_top_border=$(echo -e '\u2513')
-  left_bottom_border=$(echo -e '\u2517')
-  right_bottom_border=$(echo -e '\u251b')
+  top_border=$(echo -e '\u2550')
+  left_border=$(echo -e '\u2551')
+  right_border=$(echo -e '\u2551')
+  left_top_border=$(echo -e '\u2554')
+  right_top_border=$(echo -e '\u2557')
+  left_bottom_border=$(echo -e '\u255A')
+  right_bottom_border=$(echo -e '\u255D')
+  box_break_line=$(echo -e '\u25AB')
   # ---------------------------------------#
 }
 
@@ -89,6 +91,7 @@ box-singlechar(){
   right_top_border=$borderchar
   left_bottom_border=$borderchar
   right_bottom_border=$borderchar
+  box_break_line="-"
   # ---------------------------------------#
 }
 
@@ -125,9 +128,7 @@ boxline() {
 }
 
 boxseparator(){
-  echo -n "$left_border"
-  repchar "-" $((BOXWIDTH-1))
-  echo -n "$right_border"
+  repchar "$box_break_line" $((BOXWIDTH-2))
   echo
 }
 
