@@ -5,7 +5,7 @@
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
-pretty_date="`date +%Y-%m-%d_%H-%M-%S`"
+pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 
 # Escape characters (if your shell uses a different one, you can modify it here)
 # By default this is using the usual bash escape code
