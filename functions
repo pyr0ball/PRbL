@@ -17,8 +17,8 @@ ESC=$( printf "\033")
 # options are "single" "double" "char"
 # for the "char" option, change the "borderchar" variable to
 # whichever unicode character you wish to use
-boxtype="single"
-borderchar="#"
+boxtype="${boxtype:='single'}" # Sets default 'single' if not already set
+borderchar="${borderchar:='#'}" # Sets default '#' if not already set
 
 # Colorization options
 if [[ "$TERM" != "linux" ]] ; then
@@ -33,6 +33,7 @@ if [[ "$TERM" != "linux" ]] ; then
   ong=$(echo -e "${ESC}[38;5;166m") # orange
   lyl=$(echo -e "${ESC}[38;5;228m") # light yellow
   lrd=$(echo -e "${ESC}[38;5;196m") # light red
+  gry=$(echo -e "${ESC}[38;5;238m") # Grey
   norm=$(echo -e "${ESC}[38;5;9m")  # default/normal                                                                      
   #
   bld=$(echo -e "${ESC}[1m")    # bold
@@ -47,6 +48,8 @@ return_arrow=$(echo -e '\u2BAC')
 enter_arrow=$(echo -e '\u21B5')
 green_check=${grn}$(echo -e '\u2714')${dfl}
 red_x=${lrd}$(echo -e '\u00D7')${dfl}
+selected_opt=$(echo -e '\u25C9')
+deselected_opt=$(echo -e '\u25CB')
 
 # For drawing pretty boxes
 terminal_width=$(tput cols)
@@ -408,9 +411,11 @@ multiselect(){
     # print options by overwriting the last lines
     local idx=0
     for option in "${options[@]}"; do
-      local prefix="[ ]"
+      #local prefix="[ ]"
+      local prefix="${gry}${deselected_opt}${dfl}"
       if [[ ${selected[idx]} == true ]]; then
-        prefix="[\e[38;5;46m✔\e[0m]"
+        #prefix="[\e[38;5;46m✔\e[0m]"
+        prefix="${selected_opt}"
       fi
 
       cursor_to $(($startrow + $idx))
