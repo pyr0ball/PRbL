@@ -5,7 +5,7 @@
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
-pretty_date="`date +%Y-%m-%d_%H-%M-%S`"
+pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 
 # Escape characters (if your shell uses a different one, you can modify it here)
 # By default this is using the usual bash escape code
@@ -43,8 +43,10 @@ if [[ "$TERM" != "linux" ]] ; then
 fi
 
 # Extra Unicode Character Manipulation
-return_arrow=$(echo -e '\u21B6')
-enter_arrow$(echo -e '\u21B5')
+return_arrow=$(echo -e '\u2BAC')
+enter_arrow=$(echo -e '\u21B5')
+green_check=${grn}$(echo -e '\u2714')${dfl}
+red_x=${lrd}$(echo -e '\u00D7')${dfl}
 
 # For drawing pretty boxes
 terminal_width=$(tput cols)
@@ -54,41 +56,101 @@ else
   BOXWIDTH=80
 fi
 
+# Box Drawing characters
+light_h=$(echo -e '\u2500')
+norm_h=$(echo -e '\u2501')
+double_h=$(echo -e '\u2550')
+light_v=$(echo -e '\u2502')
+norm_v=$(echo -e '\u2503')
+double_v=$(echo -e '\u2551')
+
+
 # Box border type single-line
 box-single(){
   # ---------------------------------------#
-  top_border=$(echo -e '\u2501')
-  left_border=$(echo -e '\u2503')
-  right_border=$(echo -e '\u2503')
+  top_border=${norm_h}
+  bottom_border=${norm_h}
+  left_border=${norm_v}
+  right_border=${norm_v}
   left_top_border=$(echo -e '\u250f')
   right_top_border=$(echo -e '\u2513')
   left_bottom_border=$(echo -e '\u2517')
   right_bottom_border=$(echo -e '\u251b')
+  box_break_line=$(echo -e '\u25AB')
   # ---------------------------------------#
 }
 
 # Box border type double-line
 box-double(){
   # ---------------------------------------#
-  top_border=$(echo -e '\u2501')
-  left_border=$(echo -e '\u2503')
-  right_border=$(echo -e '\u2503')
-  left_top_border=$(echo -e '\u250f')
-  right_top_border=$(echo -e '\u2513')
-  left_bottom_border=$(echo -e '\u2517')
-  right_bottom_border=$(echo -e '\u251b')
+  top_border=${double_h}
+  bottom_border=${double_h}
+  left_border=${double_v}
+  right_border=${double_v}
+  left_top_border=$(echo -e '\u2554')
+  right_top_border=$(echo -e '\u2557')
+  left_bottom_border=$(echo -e '\u255A')
+  right_bottom_border=$(echo -e '\u255D')
+  box_break_line=$(echo -e '\u25AB')
+  # ---------------------------------------#
+}
+
+# Box border type thick-line
+box-thicc(){
+  # ---------------------------------------#
+  top_border=$(echo -e '\u2580')
+  bottom_border=$(echo -e '\u2584')
+  left_border=$(echo -e '\u258C')
+  right_border=$(echo -e '\u2590')
+  left_top_border=$(echo -e '\u259B')
+  right_top_border=$(echo -e '\u259C')
+  left_bottom_border=$(echo -e '\u2599')
+  right_bottom_border=$(echo -e '\u259F')
+  box_break_line=$(echo -e '\u25AC')
+  # ---------------------------------------#
+}
+
+# Box border type thin-line
+box-thin(){
+  # ---------------------------------------#
+  #top_border=$(echo -e '\u23BA')
+  top_border=${light_h}
+  bottom_border=${light_h}
+  left_border=${light_v}
+  right_border=${light_v}
+  left_top_border=$(echo -e '\u23BE')
+  right_top_border=$(echo -e '\u23CB')
+  left_bottom_border=$(echo -e '\u23BF')
+  right_bottom_border=$(echo -e '\u23CC')
+  box_break_line=$(echo -e '\u23AF')
+  # ---------------------------------------#
+}
+
+box-rounded(){
+  # ---------------------------------------#
+  top_border=${light_h}
+  bottom_border=${light_h}
+  left_border=${light_v}
+  right_border=${light_v}
+  left_top_border=$(echo -e '\u256D')
+  right_top_border=$(echo -e '\u256E')
+  left_bottom_border=$(echo -e '\u2570')
+  right_bottom_border=$(echo -e '\u256F')
+  box_break_line=$(echo -e '\u25A2')
   # ---------------------------------------#
 }
 
 box-singlechar(){
   # ---------------------------------------#
   top_border=$borderchar
+  bottom_border=$borderchar
   left_border=$borderchar
   right_border=$borderchar
   left_top_border=$borderchar
   right_top_border=$borderchar
   left_bottom_border=$borderchar
   right_bottom_border=$borderchar
+  box_break_line="-"
   # ---------------------------------------#
 }
 
@@ -115,7 +177,7 @@ boxtop() {
 
 boxbottom() {
   echo -n "$left_bottom_border"
-  repchar "$top_border" $((BOXWIDTH-1))
+  repchar "$bottom_border" $((BOXWIDTH-1))
   echo -n "$right_bottom_border"
   echo
 }
@@ -125,9 +187,7 @@ boxline() {
 }
 
 boxseparator(){
-  echo -n "$left_border"
-  repchar "-" $((BOXWIDTH-1))
-  echo -n "$right_border"
+  repchar "$box_break_line" $((BOXWIDTH-3))
   echo
 }
 
@@ -179,7 +239,11 @@ popdfail(){
 
 logger(){
   #$@ 2>&1 | tee >(ts "[$scriptname][%d-%m-%y %H_%M_%S]" > $logfile) # This version of prepend requires the 'ts' utility from 'moreutils' package
-  $@ 2>&1 | tee >(while IFS= read -r line; do printf '[%s] %s\n' "${scriptname}][$(date '+%Y-%m-%d %H:%M:%S')" "$line"; done >> $logfile)
+  $@ 2>&1 | tee >(
+    while IFS= read -r line; do
+      printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$line"
+    done >> $logfile
+  )
 }
 
 ctrl_c(){
