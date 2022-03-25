@@ -157,11 +157,16 @@ box-singlechar(){
   # ---------------------------------------#
 }
 
-case $boxtype in 
-  single) box-single ;;
-  double) box-double ;;
-  char)   box-singlechar ;;
-esac
+set-boxtype(){
+  case $boxtype in 
+    norm)   box-norm ;;
+    double) box-double ;;
+    heavy)  box-heavy ;;
+    light)   box-light ;;
+    rounded) box-rounded ;;
+    char)   box-singlechar ;;
+  esac
+}
 
 repchar() {
   n=1
