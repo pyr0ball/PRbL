@@ -2,6 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
+functionsrev=1.0.1
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
@@ -17,8 +18,10 @@ ESC=$( printf "\033")
 # options are "single" "double" "char"
 # for the "char" option, change the "borderchar" variable to
 # whichever unicode character you wish to use
-boxtype="${boxtype:='single'}" # Sets default 'single' if not already set
-borderchar="${borderchar:='#'}" # Sets default '#' if not already set
+# boxtype="${boxtype:-single}" # Sets default 'single' if not already set
+# borderchar="${borderchar:-#}" # Sets default '#' if not already set
+boxtype="norm" # Sets default 'single' if not already set
+borderchar="#" # Sets default '#' if not already set
 
 # Colorization options
 if [[ "$TERM" != "linux" ]] ; then
@@ -33,13 +36,21 @@ if [[ "$TERM" != "linux" ]] ; then
   ong=$(echo -e "${ESC}[38;5;166m") # orange
   lyl=$(echo -e "${ESC}[38;5;228m") # light yellow
   lrd=$(echo -e "${ESC}[38;5;196m") # light red
-  gry=$(echo -e "${ESC}[38;5;238m") # Grey
-  norm=$(echo -e "${ESC}[38;5;9m")  # default/normal                                                                      
+  gry=$(echo -e "${ESC}[38;5;240m") # Grey
+  norm=$(echo -e "${ESC}[39m")  # default/normal                                                                      
   #
   bld=$(echo -e "${ESC}[1m")    # bold
+  unb=$(echo -e "${ESC}[21m")   # un-bold
+  dim=$(echo -e "${ESC}[2m")    # dim
+  und=$(echo -e "${ESC}[22m")   # un-dim
   unl=$(echo -e "${ESC}[4m")    # underline
-  blk=$(echo -e "${ESC}[7m")    # blinking not supported in our xterm, so reverse instead
   nln=$(echo -e "${ESC}[24")    # not-underline
+  blk=$(echo -e "${ESC}[5")     # blinking
+  unbl=$(echo -e "${ESC}[25")   # stop blinking
+  inv=$(echo -e "${ESC}[7m")    # invert
+  rsinv=$(echo -e "${ESC}[27")  # reset invert
+  hid=$(echo -e "${ESC}[8")     # hidden
+  unh=$(echo -e "${ESC}[28")    # unhide
   dfl=$(echo -e "${ESC}[0m")    # restore default
 fi
 
@@ -49,7 +60,7 @@ enter_arrow=$(echo -e '\u21B5')
 green_check=${grn}$(echo -e '\u2714')${dfl}
 red_x=${lrd}$(echo -e '\u00D7')${dfl}
 selected_opt=$(echo -e '\u25C9')
-deselected_opt=$(echo -e '\u25CB')
+deselected_opt=$(echo -e '\u25CE')
 
 # For drawing pretty boxes
 terminal_width=$(tput cols)
@@ -69,7 +80,7 @@ double_v=$(echo -e '\u2551')
 
 
 # Box border type single-line
-box-single(){
+box-norm(){
   # ---------------------------------------#
   top_border=${norm_h}
   bottom_border=${norm_h}
@@ -99,7 +110,7 @@ box-double(){
 }
 
 # Box border type thick-line
-box-thicc(){
+box-heavy(){
   # ---------------------------------------#
   top_border=$(echo -e '\u2580')
   bottom_border=$(echo -e '\u2584')
@@ -114,7 +125,7 @@ box-thicc(){
 }
 
 # Box border type thin-line
-box-thin(){
+box-light(){
   # ---------------------------------------#
   #top_border=$(echo -e '\u23BA')
   top_border=${light_h}
@@ -157,7 +168,7 @@ box-singlechar(){
   # ---------------------------------------#
 }
 
-set-boxtype(){
+# set-boxtype(){
   case $boxtype in 
     norm)   box-norm ;;
     double) box-double ;;
@@ -166,7 +177,9 @@ set-boxtype(){
     rounded) box-rounded ;;
     char)   box-singlechar ;;
   esac
-}
+# }
+
+#set-boxtype
 
 repchar() {
   n=1
