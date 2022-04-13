@@ -70,6 +70,12 @@ else
   BOXWIDTH=80
 fi
 
+# For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
+center() {
+  padding="$(printf '%0.1s'  {1..500})"
+  printf '%*.*s %s %*.*s\n' 0 "$(((terminal_width-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
+}
+
 # Box Drawing characters
 light_h=$(echo -e '\u2500')
 norm_h=$(echo -e '\u2501')
