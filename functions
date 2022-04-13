@@ -218,6 +218,21 @@ boxseparator(){
   echo
 }
 
+# For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
+center() {
+  padding="$(printf '%0.2s' ={1..500})"
+  #padding=" "
+  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "$left_border$padding" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "$padding$right_border"
+}
+
+# For printing spanned text, e.g. single-pair lists ($name...$title)
+spanner() {
+  # 1: left-side-text, 2: right-side-text
+  local spanner="";
+  eval printf -v spanner \'"%0.1s"\' "-"{1..$[$(BOXWIDTH)- 2 - ${#1} - ${#2}]}
+  printf "%s %s %s" "$1" "$spanner" "$2";
+}
+
 boxborder(){
   boxtop
   for line in "$@" ; do
