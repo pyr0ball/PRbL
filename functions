@@ -229,7 +229,7 @@ center() {
 spanner() {
   # 1: left-side-text, 2: right-side-text
   local spanner="";
-  eval printf -v spanner \'"%0.1s"\' "-"{1..$[$(BOXWIDTH)- 2 - ${#1} - ${#2}]}
+  eval printf -v spanner \'"%0.1s"\' "-"{1..$[$((BOXWIDTH+24))- 2 - ${#1} - ${#2}]}
   printf "%s %s %s" "$1" "$spanner" "$2";
 }
 
