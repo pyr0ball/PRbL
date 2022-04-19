@@ -279,7 +279,7 @@ ctrl_c(){
 }
 
 # ensure ctrl-c to cancel script ends the entire process and not just the current function
-trap ctrl_c INT
+# trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
 # Renders a text based list of options that can be selected by the
 # user using up, down and enter keys and returns the chosen option.
