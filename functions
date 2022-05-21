@@ -281,6 +281,41 @@ ctrl_c(){
 # ensure ctrl-c to cancel script ends the entire process and not just the current function
 # trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
+# Function for spinner status
+sp="/-\|"
+sc=0
+spin() {
+   printf "\b${sp:sc++:1}"
+   ((sc==${#sp})) && sc=0
+}
+endspin() {
+   printf "\r%s\n" "$@"
+}
+
+# Example usage for above:
+# until work_done; do
+#    spin
+#    some_work ...
+# done
+# endspin
+
+# https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
+progress-bar() {
+# Process data
+	let _progress=(${1}*100/${2}*100)/100
+	let _done=(${_progress}*4)/10
+	let _left=40-$_done
+# Build progressbar string lengths
+	_done=$(printf "%${_done}s")
+	_left=$(printf "%${_left}s")
+
+# 1.2 Build progressbar strings and print the ProgressBar line
+# 1.2.1 Output example:
+# 1.2.1.1 Progress : [########################################] 100%
+printf "\rProgress : [${_done// /#}${_left// /-}] ${_progress}%%"
+
+}
+
 # Renders a text based list of options that can be selected by the
 # user using up, down and enter keys and returns the chosen option.
 #
@@ -297,9 +332,9 @@ select_option(){
   print_selected()   { printf "  $ESC[7m $1 $ESC[27m"; }
   get_cursor_row()   { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
   key_input()        { read -s -n3 key 2>/dev/null >&2
-                    if [[ $key = $ESC[A ]]; then echo up;    fi
-                    if [[ $key = $ESC[B ]]; then echo down;  fi
-                    if [[ $key = ""     ]]; then echo enter; fi; }
+    if [[ $key = $ESC[A ]]; then echo up;    fi
+    if [[ $key = $ESC[B ]]; then echo down;  fi
+    if [[ $key = ""     ]]; then echo enter; fi; }
 
   # initially print empty new lines (scroll down if at bottom of screen)
   for opt; do printf "\n"; done

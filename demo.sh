@@ -105,3 +105,10 @@ for option in "${my_options[@]}"; do
    echo -e "$option\t=> ${result[idx]}"
    ((idx++))
 done
+
+# Example usage for above:
+ until $(sleep 5); do
+    spin
+    sleep 0.2
+ done
+ endspin
