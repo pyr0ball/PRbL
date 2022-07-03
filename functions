@@ -10,7 +10,18 @@ pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 
 # Escape characters (if your shell uses a different one, you can modify it here)
 # By default this is using the usual bash escape code
-ESC=$( printf "\033")
+ESC=$( printf '\033')
+
+# Detect OS type
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  ESC=$( printf '\033')
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  ESC=$( printf '\e')
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+  ESC=$( printf '\033')
+else [[ "$OSTYPE" == "msys" ]]; then
+  ESC=$( printf '\033')
+fi
 
 # Utilities (Setting up colors and bounding boxes)
 
@@ -48,19 +59,19 @@ if [[ "$TERM" != "linux" ]] ; then
   blk=$(echo -e "${ESC}[5")     # blinking
   unbl=$(echo -e "${ESC}[25")   # stop blinking
   inv=$(echo -e "${ESC}[7m")    # invert
-  rsinv=$(echo -e "${ESC}[27")  # reset invert
+  rsinv=$(echo -e "${ESC}[27")  # reset http://www.endmemo.com/unicode/unicodeconverter.phpnvert
   hid=$(echo -e "${ESC}[8")     # hidden
   unh=$(echo -e "${ESC}[28")    # unhide
   dfl=$(echo -e "${ESC}[0m")    # restore default
 fi
 
 # Extra Unicode Character Manipulation
-return_arrow=$(echo -e '\u2BAC')
-enter_arrow=$(echo -e '\u21B5')
-green_check=${grn}$(echo -e '\u2714')${dfl}
-red_x=${lrd}$(echo -e '\u00D7')${dfl}
-selected_opt=$(echo -e '\u25C9')
-deselected_opt=$(echo -e '\u25CE')
+return_arrow=$(echo -e "\u2BAC")
+enter_arrow=$(echo -e "\u21B5")
+green_check=${grn}$(echo -e "\u2714")${dfl}
+red_x=${lrd}$(echo -e "\u00D7")${dfl}
+selected_opt=$(echo -e "\u25C9")
+deselected_opt=$(echo -e "\u25CE")
 
 # For drawing pretty boxes
 terminal_width=$(tput cols)
@@ -77,12 +88,12 @@ center() {
 }
 
 # Box Drawing characters
-light_h=$(echo -e '\u2500')
-norm_h=$(echo -e '\u2501')
-double_h=$(echo -e '\u2550')
-light_v=$(echo -e '\u2502')
-norm_v=$(echo -e '\u2503')
-double_v=$(echo -e '\u2551')
+light_h=$(echo -e "\u2500")
+norm_h=$(echo -e "\u2501")
+double_h=$(echo -e "\u2550")
+light_v=$(echo -e "\u2502")
+norm_v=$(echo -e "\u2503")
+double_v=$(echo -e "\u2551")
 
 
 # Box border type single-line
@@ -92,11 +103,11 @@ box-norm(){
   bottom_border=${norm_h}
   left_border=${norm_v}
   right_border=${norm_v}
-  left_top_border=$(echo -e '\u250f')
-  right_top_border=$(echo -e '\u2513')
-  left_bottom_border=$(echo -e '\u2517')
-  right_bottom_border=$(echo -e '\u251b')
-  box_break_line=$(echo -e '\u25AB')
+  left_top_border=$(echo -e "\u250f")
+  right_top_border=$(echo -e "\u2513")
+  left_bottom_border=$(echo -e "\u2517")
+  right_bottom_border=$(echo -e "\u251b")
+  box_break_line=$(echo -e "\u25AB")
   # ---------------------------------------#
 }
 
