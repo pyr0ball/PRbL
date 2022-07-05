@@ -19,7 +19,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   ESC=$( printf '\e')
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   ESC=$( printf '\033')
-else [[ "$OSTYPE" == "msys" ]]; then
+elif [[ "$OSTYPE" == "msys" ]]; then
   ESC=$( printf '\033')
 fi
 
