@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.0.1
+functionsrev=1.1.0
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
@@ -13,15 +13,21 @@ pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 ESC=$( printf '\033')
 
 # Detect OS type
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  ESC=$( printf '\033')
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  ESC=$( printf '\e')
-elif [[ "$OSTYPE" == "cygwin" ]]; then
-  ESC=$( printf '\033')
-elif [[ "$OSTYPE" == "msys" ]]; then
-  ESC=$( printf '\033')
-fi
+case $OSTYPE in 
+  linux-gnu ) ESC=$( printf '\033') ;;
+  darwin ) ESC=$( printf '\e') ;;
+  cygwin ) ESC=$( printf '\033') ;;
+  msys ) ESC=$( printf '\033') ;;
+esac
+# if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+#   ESC=$( printf '\033')
+# elif [[ "$OSTYPE" == "darwin"* ]]; then
+#   ESC=$( printf '\e')
+# elif [[ "$OSTYPE" == "cygwin" ]]; then
+#   ESC=$( printf '\033')
+# elif [[ "$OSTYPE" == "msys" ]]; then
+#   ESC=$( printf '\033')
+# fi
 
 # Utilities (Setting up colors and bounding boxes)
 
