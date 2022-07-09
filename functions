@@ -796,3 +796,5 @@ multiselect(){
 #    echo -e "$option\t=> ${result[idx]}"
 #    ((idx++))
 #done
+
+set-boxtype
