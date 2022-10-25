@@ -5,6 +5,7 @@
 functionsrev=1.1.0
 scriptname="${0##*/}"
 rundir="${0%/*}"
+rundir_absolute=$(cd `dirname $0` && pwd)
 runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 
