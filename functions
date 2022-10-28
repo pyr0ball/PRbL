@@ -14,8 +14,8 @@ ESC=$( printf '\033')
 
 # Detect OS type
 case $OSTYPE in 
-  linux-gnu ) ESC=$( printf '\033') ;;
-  darwin ) ESC=$( printf '\e') ;;
+  linux-gnu* ) ESC=$( printf '\033') ;;
+  darwin* ) ESC=$( printf '\e') ;;
   cygwin ) ESC=$( printf '\033') ;;
   msys ) ESC=$( printf '\033') ;;
 esac
@@ -73,7 +73,7 @@ fi
 
 # Extra Unicode Character Manipulation
 case $OSTYPE in 
-  linux-gnu ) 
+  linux-gnu* ) 
     return_arrow=$(echo -e "\u2BAC")
     enter_arrow=$(echo -e "\u21B5")
     green_check=${grn}$(echo -e "\u2714")${dfl}
@@ -81,7 +81,7 @@ case $OSTYPE in
     selected_opt=$(echo -e "\u25C9")
     deselected_opt=$(echo -e "\u25CE")
   ;;
-  darwin )
+  darwin* )
     return_arrow=$(echo -e "⮬")
     enter_arrow=$(echo -e "↵")
     green_check=${grn}$(echo -e "✔")${dfl}
@@ -117,7 +117,7 @@ fi
 
 # Box Drawing characters
 case $OSTYPE in 
-  linux-gnu ) 
+  linux-gnu* ) 
     light_h=$(echo -e "\u2500")
     norm_h=$(echo -e "\u2501")
     double_h=$(echo -e "\u2550")
@@ -125,7 +125,7 @@ case $OSTYPE in
     norm_v=$(echo -e "\u2503")
     double_v=$(echo -e "\u2551")
   ;;
-  darwin )
+  darwin* )
     light_h=$(echo -e "─")
     norm_h=$(echo -e "━")
     double_h=$(echo -e "═")
@@ -157,7 +157,7 @@ esac
 box-norm(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu ) 
+    linux-gnu* ) 
       top_border=${norm_h}
       bottom_border=${norm_h}
       left_border=${norm_v}
@@ -168,7 +168,7 @@ box-norm(){
       right_bottom_border=$(echo -e "\u251b")
       box_break_line=$(echo -e "\u25AB")
     ;;
-    darwin )
+    darwin* )
       top_border=${norm_h}
       bottom_border=${norm_h}
       left_border=${norm_v}
@@ -210,7 +210,7 @@ box-norm(){
 box-double(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu ) 
+    linux-gnu* ) 
       top_border=${double_h}
       bottom_border=${double_h}
       left_border=${double_v}
@@ -221,7 +221,7 @@ box-double(){
       right_bottom_border=$(echo -e "\u255D")
       box_break_line=$(echo -e "\u25AB")
     ;;
-    darwin )
+    darwin* )
       top_border=${double_h}
       bottom_border=${double_h}
       left_border=${double_v}
@@ -262,7 +262,7 @@ box-double(){
 box-heavy(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu ) 
+    linux-gnu* ) 
       top_border=$(echo -e "\u2580")
       bottom_border=$(echo -e "\u2584")
       left_border=$(echo -e "\u258C")
@@ -273,7 +273,7 @@ box-heavy(){
       right_bottom_border=$(echo -e "\u259F")
       box_break_line=$(echo -e "\u25AC")
     ;;
-    darwin )
+    darwin* )
       top_border=$(echo -e "▀")
       bottom_border=$(echo -e "▄")
       left_border=$(echo -e "▌")
@@ -315,7 +315,7 @@ box-light(){
   # ---------------------------------------#
   #top_border=$(echo -e '\u23BA')
   case $OSTYPE in 
-    linux-gnu ) 
+    linux-gnu* ) 
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
@@ -326,7 +326,7 @@ box-light(){
       right_bottom_border=$(echo -e "\u23CC")
       box_break_line=$(echo -e "\u23AF")
     ;;
-    darwin )
+    darwin* )
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
@@ -366,7 +366,7 @@ box-light(){
 box-rounded(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu ) 
+    linux-gnu* ) 
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
@@ -377,7 +377,7 @@ box-rounded(){
       right_bottom_border=$(echo -e "\u256F")
       box_break_line=$(echo -e "\u25A2")
     ;;
-    darwin )
+    darwin* )
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
