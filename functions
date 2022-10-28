@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.0
+functionsrev=1.1.1
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
