@@ -20,15 +20,6 @@ case $OSTYPE in
   cygwin ) ESC=$( printf '\033') ;;
   msys ) ESC=$( printf '\033') ;;
 esac
-# if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-#   ESC=$( printf '\033')
-# elif [[ "$OSTYPE" == "darwin"* ]]; then
-#   ESC=$( printf '\e')
-# elif [[ "$OSTYPE" == "cygwin" ]]; then
-#   ESC=$( printf '\033')
-# elif [[ "$OSTYPE" == "msys" ]]; then
-#   ESC=$( printf '\033')
-# fi
 
 # Utilities (Setting up colors and bounding boxes)
 
@@ -481,17 +472,18 @@ boxseparator(){
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
 center() {
-  padding="$(printf '%0.2s' ={1..500})"
+  local padding="";
+  padding="$(printf '%0.1s'  \ {1..100})"
   #padding=" "
-  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "$left_border$padding" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "$padding$right_border"
+  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}"
 }
 
 # For printing spanned text, e.g. single-pair lists ($name...$title)
 spanner() {
   # 1: left-side-text, 2: right-side-text
   local spanner="";
-  eval printf -v spanner \'"%0.1s"\' "-"{1..$[$((BOXWIDTH+10))- 2 - ${#1} - ${#2}]}
-  printf "%s %s %s" "$1" "$spanner" "$2";
+  eval printf -v spanner \'"%0.1s"\' "-"{1..$[$((BOXWIDTH-4))- 2 - ${#1} - ${#2}]}
+  printf "%s %s %s\n" "$1" "$spanner" "$2";
 }
 
 boxborder(){
