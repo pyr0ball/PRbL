@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.1
+functionsrev=1.1.2
 scriptname="${0##*/}"
 rundir="${0%/*}"
 rundir_absolute=$(cd `dirname $0` && pwd)
@@ -495,26 +495,29 @@ boxborder(){
 }
 
 success(){
+  _line="$@"
   echo -e "\n"
-  boxborder " ${scriptname} ${grn}SUCCESS${dfl}$@"
-	exit 0
+  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  exit 0
 }
 
 warn(){
-  echo -e "\n"
   ec=$?
+  _line="$@"
+  echo -e "\n"
   boxtop
-	boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: $@${dfl}"
+  boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
   boxbottom
 }
 
 fail(){
-	ec=$?
-	echo -e "\n"
-	boxtop
-	boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: $@${dfl}"
-	boxbottom
-	exit $ec
+  ec=$?
+  _line="$@"
+  echo -e "\n"
+  boxtop
+  boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  boxbottom
+  exit $ec
 }
 
 pushd(){
@@ -536,7 +539,8 @@ logger(){
   #$@ 2>&1 | tee >(ts "[$scriptname][%d-%m-%y %H_%M_%S]" > $logfile) # This version of prepend requires the 'ts' utility from 'moreutils' package
   $@ 2>&1 | tee >(
     while IFS= read -r line; do
-      printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$line"
+      _line=$(echo $line | sed "s,\x1B\[[0-9;]*[mK],,g" | tr -dc '[:print:]')
+      printf '[%s] %s\n' "${scriptname}][${prettyDate}" "$_line"
     done >> $logfile
   )
 }
