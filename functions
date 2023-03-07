@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.3
+functionsrev=1.1.4
 scriptname="${0##*/}"
 rundir="${0%/*}"
 rundir_absolute=$(cd `dirname $0` && pwd)
@@ -555,14 +555,17 @@ ctrl_c(){
 # trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
 # Function for spinner status
-sp="/-\|"
-sc=0
+# usage: spin "command [args]"
 spin() {
-   printf "\b${sp:sc++:1}"
-   ((sc==${#sp})) && sc=0
-}
-endspin() {
-   printf "\r%s\n" "$@"
+  sp="/-\|"
+  sc=0
+  $@ &
+  _PID=&!
+  while [ -d /proc/$_PID ] ; do
+    printf "\b${sp:sc++:1}"
+    ((sc==${#sp})) && sc=0
+  done
+  printf "\r%s\n" "$@"
 }
 
 # Example usage for above:
