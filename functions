@@ -796,6 +796,7 @@ multiselect(){
 #done
 
 ### IP validation function
+# returns 0 (true) for valid, 1 (false) for invalid
 valid-ip()
 {
     local  ip=$1
