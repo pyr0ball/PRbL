@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # Initial Vars
-VERSION=1.0.0
+VERSION=1.1.0
 scriptname="${0##*/}"
 rundir="${0%/*}"
 runuser="$(whoami)"
-pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 
 source ${rundir}/functions
 
@@ -45,6 +44,8 @@ boxborder \
    "${red}${unl}Red + Underline${dfl}" \
    "${red}${inv}Red + Inverted${dfl}"
 # boxborder
+
+# demo different box border types
 echo ""
 boxborder "${lyl}Bounding Boxes${dfl}"
 box-double
@@ -60,6 +61,7 @@ boxborder "Single Character"
 box-norm
 boxborder "Normal"
 
+# Demo interactive menus
 boxborder \
    "${lyl}Keyboard Interactive Menus${dfl}"\
    $(boxseparator) \
@@ -80,7 +82,7 @@ choice=$?
 echo "Choosen index = $choice"
 echo "        value = ${options[$choice]}"
 
-# Examples for above select_opt
+# Examples for select_opt
 case `select_opt "Yes" "No" "Cancel"` in
   0) echo "selected Yes";;
   1) echo "selected No";;
@@ -106,9 +108,9 @@ for option in "${my_options[@]}"; do
    ((idx++))
 done
 
-# Example usage for above:
- until $(sleep 5); do
-    spin
-    sleep 0.2
- done
- endspin
+# Spinner
+for i in {1..11} ; do
+   boxborder "spinner$i demo"
+   set_spinner spinner$i
+   spin "sleep 3"
+done

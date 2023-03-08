@@ -2,13 +2,19 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.4
+functionsrev=1.1.5
 scriptname="${0##*/}"
 rundir="${0%/*}"
 rundir_absolute=$(cd `dirname $0` && pwd)
 runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
+
+# return any cursor mods to normal on exit
+cleanup(){
+  tput cnorm
+}
+trap cleanup EXIT
 
 # Escape characters (if your shell uses a different one, you can modify it here)
 # By default this is using the usual bash escape code
@@ -556,24 +562,75 @@ ctrl_c(){
 
 # Function for spinner status
 # usage: spin "command [args]"
-spin() {
-  sp="/-\|"
-  sc=0
-  $@ &
-  _PID=&!
-  while [ -d /proc/$_PID ] ; do
-    printf "\b${sp:sc++:1}"
-    ((sc==${#sp})) && sc=0
-  done
-  printf "\r%s\n" "$@"
+set_spinner() {
+  case $1 in
+    spinner1)
+      FRAME="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+      FRAME_INTERVAL=0.05
+      ;;
+    spinner2)
+      FRAME="-\|/"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner3)
+      FRAME="◐◓◑◒"
+      FRAME_INTERVAL=0.2
+      ;;
+    spinner4)
+      FRAME=":(:|:):D"
+      FRAME_INTERVAL=0.5
+      ;;
+    spinner5)
+      FRAME="◇◈◆◈"
+      FRAME_INTERVAL=0.2
+      ;;
+    spinner6)
+      FRAME="⚬⚭⚮⚯⚮⚭"
+      FRAME_INTERVAL=0.2
+      ;;
+    spinner7)
+      FRAME="░▒▓█▓▒"
+      FRAME_INTERVAL=0.25
+      ;;
+    spinner8)
+      FRAME="☉◎◉◎☉"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner9)
+      FRAME="♡♥❤♥♡"
+      FRAME_INTERVAL=0.15
+      ;;
+    spinner10)
+      FRAME="✧☆★✪✲◌"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner11)
+      FRAME="●◕☯◔◕"
+      FRAME_INTERVAL=0.25
+      ;;
+    *)
+      echo "No spinner is defined for $1"
+      exit 1
+  esac
 }
 
-# Example usage for above:
-# until work_done; do
-#    spin
-#    some_work ...
-# done
-# endspin
+spin() {
+  tput civis
+  sc=0
+  CMD=$@
+  $CMD &
+  _PID=$!
+  while [ -d /proc/$_PID ] ; do
+    for i in "${FRAME[@]}" ; do
+      printf "\b${FRAME:sc++:1}"
+      ((sc==${#FRAME})) && sc=0
+      #echo -ne "\b${FRAME[$i]}"
+      sleep $FRAME_INTERVAL
+    done
+  done
+  printf "\r\n"
+  tput cnorm
+}
 
 # https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 progress-bar() {
