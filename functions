@@ -501,6 +501,17 @@ boxborder(){
   boxbottom
 }
 
+subboxborder(){
+  BOXWIDTH_ORG=$BOXWIDTH
+  BOXWIDTH=$(($BOXWIDTH*75/100))
+  boxline $(boxtop)
+  for line in "$@" ; do
+    boxline $(boxline "$line")
+  done
+  boxline $(boxbottom)
+  BOXWIDTH=$BOXWIDTH_ORG
+}
+
 success(){
   _line="$@"
   echo -e "\n"
