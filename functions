@@ -588,8 +588,8 @@ set_spinner() {
       FRAME_INTERVAL=0.2
       ;;
     spinner4)
-      FRAME=":(:|:):D"
-      FRAME_INTERVAL=0.5
+      FRAME="⇐⇖⇑⇗⇒⇘⇓⇙"
+      FRAME_INTERVAL=0.15
       ;;
     spinner5)
       FRAME="◇◈◆◈"
@@ -612,12 +612,24 @@ set_spinner() {
       FRAME_INTERVAL=0.15
       ;;
     spinner10)
-      FRAME="✧☆★✪✲◌"
+      FRAME="✧☆★✪✲"
       FRAME_INTERVAL=0.1
       ;;
     spinner11)
-      FRAME="●◕☯◔◕"
+      FRAME="←↖↑↗→↘↓↙"
       FRAME_INTERVAL=0.25
+      ;;
+    spinner12)
+      FRAME="▖▘▝▗"
+      FRAME_INTERVAL=0.25
+      ;;
+    spinner13)
+      FRAME="▙▛▜▟"
+      FRAME_INTERVAL=0.25
+      ;;
+    spinner14)
+      FRAME="▚▞"
+      FRAME_INTERVAL=0.5
       ;;
     *)
       echo "No spinner is defined for $1"

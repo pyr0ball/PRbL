@@ -97,6 +97,9 @@ case `select_opt "${options[@]}"` in
 esac
 
 # Example for above multiselect functions
+boxborder \
+   "Use arrow keys to select a line, spacebar to toggle" \
+   "Then 'enter' to confirm choices"
 my_options=(   "Option 1"  "Option 2"  "Option 3" )
 preselection=( "true"      "true"      "false"    )
 
@@ -109,7 +112,7 @@ for option in "${my_options[@]}"; do
 done
 
 # Spinner
-for i in {1..11} ; do
+for i in {1..14} ; do
    boxborder "spinner$i demo"
    set_spinner spinner$i
    spin "sleep 3"
