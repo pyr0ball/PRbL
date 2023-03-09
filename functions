@@ -2,10 +2,10 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.6
+functionsrev=1.1.7
 scriptname="${0##*/}"
 rundir="${0%/*}"
-rundir_absolute=$(cd `dirname $0` && pwd)
+rundir_absolute=$(cd $rundir && pwd)
 runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
@@ -589,7 +589,7 @@ set_spinner() {
       ;;
     spinner4)
       FRAME="⇐⇖⇑⇗⇒⇘⇓⇙"
-      FRAME_INTERVAL=0.15
+      FRAME_INTERVAL=0.1
       ;;
     spinner5)
       FRAME="◇◈◆◈"
@@ -597,11 +597,11 @@ set_spinner() {
       ;;
     spinner6)
       FRAME="⚬⚭⚮⚯⚮⚭"
-      FRAME_INTERVAL=0.2
+      FRAME_INTERVAL=0.15
       ;;
     spinner7)
       FRAME="░▒▓█▓▒"
-      FRAME_INTERVAL=0.25
+      FRAME_INTERVAL=0.2
       ;;
     spinner8)
       FRAME="☉◎◉◎☉"
@@ -617,31 +617,38 @@ set_spinner() {
       ;;
     spinner11)
       FRAME="←↖↑↗→↘↓↙"
-      FRAME_INTERVAL=0.25
+      FRAME_INTERVAL=0.1
       ;;
     spinner12)
       FRAME="▖▘▝▗"
-      FRAME_INTERVAL=0.25
+      FRAME_INTERVAL=0.2
       ;;
     spinner13)
       FRAME="▙▛▜▟"
-      FRAME_INTERVAL=0.25
+      FRAME_INTERVAL=0.2
       ;;
     spinner14)
       FRAME="▚▞"
       FRAME_INTERVAL=0.5
       ;;
+    spinner15)
+      FRAME="☰☱☳☶☵☳☶☴"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner16)
+      FRAME="▤▧▥▨"
+      FRAME_INTERVAL=0.2
+      ;;
     *)
-      echo "No spinner is defined for $1"
-      exit 1
+      warn "No spinner is defined for $1"
   esac
 }
 
 spin() {
+  CMD=$@
   tput civis
   sc=0
-  CMD=$@
-  $CMD &
+  $CMD & 
   _PID=$!
   while [ -d /proc/$_PID ] ; do
     for i in "${FRAME[@]}" ; do
@@ -651,6 +658,26 @@ spin() {
       sleep $FRAME_INTERVAL
     done
   done
+  printf "\r\n"
+  tput cnorm
+}
+
+spinstart() {
+  sstop=false
+  tput civis
+  sc=0
+  while [[ $sstop == false ]] ; do
+    for i in "${FRAME[@]}" ; do
+      printf "\b${FRAME:sc++:1}"
+      ((sc==${#FRAME})) && sc=0
+      #echo -ne "\b${FRAME[$i]}"
+      sleep $FRAME_INTERVAL
+    done
+  done
+}
+
+spinstop() {
+  export sstop=true
   printf "\r\n"
   tput cnorm
 }
