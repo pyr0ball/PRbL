@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.5
+functionsrev=1.1.6
 scriptname="${0##*/}"
 rundir="${0%/*}"
 rundir_absolute=$(cd `dirname $0` && pwd)
