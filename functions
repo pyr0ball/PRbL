@@ -612,7 +612,7 @@ set_spinner() {
       FRAME_INTERVAL=0.15
       ;;
     spinner10)
-      FRAME="✧☆★✪✲"
+      FRAME="▁▂▃▄▅▆▇█▇▆▅▄▃▂▁"
       FRAME_INTERVAL=0.1
       ;;
     spinner11)
@@ -632,12 +632,24 @@ set_spinner() {
       FRAME_INTERVAL=0.5
       ;;
     spinner15)
-      FRAME="☰☱☳☶☵☳☶☴"
+      FRAME="☰☱☳☶☵☳☶☴☰☰"
       FRAME_INTERVAL=0.1
       ;;
     spinner16)
       FRAME="▤▧▥▨"
       FRAME_INTERVAL=0.2
+      ;;
+    spinner17)
+      FRAME="▉▊▋▌▍▎▏▎▍▌▋▊▉"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner18)
+      FRAME="⣾⣽⣻⢿⡿⣟⣯⣷"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner19)
+      FRAME="┤┘┴└├┌┬┐"
+      FRAME_INTERVAL=0.1
       ;;
     *)
       warn "No spinner is defined for $1"
