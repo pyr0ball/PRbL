@@ -964,10 +964,12 @@ vercomp() {
         fi
         if ((10#${ver1[i]} > 10#${ver2[i]}))
         then
+            # version 1 is greater than version 2
             return 1
         fi
         if ((10#${ver1[i]} < 10#${ver2[i]}))
         then
+          # version 1 is less than version 2
             return 2
         fi
     done
