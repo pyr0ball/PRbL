@@ -2,8 +2,8 @@
 
 # Initial Vars
 VERSION=1.1.0
-scriptname="${0##*/}"
-rundir="${0%/*}"
+scriptname="${BASH_SOURCE[0]##*/}"
+rundir="${BASH_SOURCE[0]%/*}"
 runuser="$(whoami)"
 
 source ${rundir}/functions
