@@ -72,14 +72,14 @@ fi
 
 # Extra Unicode Character Manipulation
 case $OSTYPE in 
-  linux-gnu* ) 
+    linux-gnu*|cygwin|msys)
     return_arrow=$(echo -e "\u2BAC")
     enter_arrow=$(echo -e "\u21B5")
     green_check=${grn}$(echo -e "\u2714")${dfl}
     red_x=${lrd}$(echo -e "\u00D7")${dfl}
     selected_opt=$(echo -e "\u25C9")
     deselected_opt=$(echo -e "\u25CE")
-  ;;
+  ;;&
   darwin* )
     return_arrow=$(echo -e "⮬")
     enter_arrow=$(echo -e "↵")
@@ -87,22 +87,6 @@ case $OSTYPE in
     red_x=${lrd}$(echo -e "×")${dfl}
     selected_opt=$(echo -e "◉")
     deselected_opt=$(echo -e "◎")
-  ;;
-  cygwin )
-    return_arrow=$(echo -e "\u2BAC")
-    enter_arrow=$(echo -e "\u21B5")
-    green_check=${grn}$(echo -e "\u2714")${dfl}
-    red_x=${lrd}$(echo -e "\u00D7")${dfl}
-    selected_opt=$(echo -e "\u25C9")
-    deselected_opt=$(echo -e "\u25CE")
-  ;;
-  msys )
-    return_arrow=$(echo -e "\u2BAC")
-    enter_arrow=$(echo -e "\u21B5")
-    green_check=${grn}$(echo -e "\u2714")${dfl}
-    red_x=${lrd}$(echo -e "\u00D7")${dfl}
-    selected_opt=$(echo -e "\u25C9")
-    deselected_opt=$(echo -e "\u25CE")
   ;;
 esac
 
@@ -116,14 +100,14 @@ fi
 
 # Box Drawing characters
 case $OSTYPE in 
-  linux-gnu* ) 
+    linux-gnu*|cygwin|msys) 
     light_h=$(echo -e "\u2500")
     norm_h=$(echo -e "\u2501")
     double_h=$(echo -e "\u2550")
     light_v=$(echo -e "\u2502")
     norm_v=$(echo -e "\u2503")
     double_v=$(echo -e "\u2551")
-  ;;
+  ;;&
   darwin* )
     light_h=$(echo -e "─")
     norm_h=$(echo -e "━")
@@ -131,22 +115,6 @@ case $OSTYPE in
     light_v=$(echo -e "│")
     norm_v=$(echo -e "┃")
     double_v=$(echo -e "║")
-  ;;
-  cygwin )
-    light_h=$(echo -e "\u2500")
-    norm_h=$(echo -e "\u2501")
-    double_h=$(echo -e "\u2550")
-    light_v=$(echo -e "\u2502")
-    norm_v=$(echo -e "\u2503")
-    double_v=$(echo -e "\u2551")
-  ;;
-  msys )
-    light_h=$(echo -e "\u2500")
-    norm_h=$(echo -e "\u2501")
-    double_h=$(echo -e "\u2550")
-    light_v=$(echo -e "\u2502")
-    norm_v=$(echo -e "\u2503")
-    double_v=$(echo -e "\u2551")
   ;;
 esac
 
@@ -156,7 +124,7 @@ esac
 box-norm(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu* ) 
+    linux-gnu*|cygwin|msys)
       top_border=${norm_h}
       bottom_border=${norm_h}
       left_border=${norm_v}
@@ -166,7 +134,7 @@ box-norm(){
       left_bottom_border=$(echo -e "\u2517")
       right_bottom_border=$(echo -e "\u251b")
       box_break_line=$(echo -e "\u25AB")
-    ;;
+    ;;&
     darwin* )
       top_border=${norm_h}
       bottom_border=${norm_h}
@@ -178,28 +146,6 @@ box-norm(){
       right_bottom_border=$(echo -e "┛")
       box_break_line=$(echo -e "▫")
     ;;
-    cygwin )
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "\u250f")
-      right_top_border=$(echo -e "\u2513")
-      left_bottom_border=$(echo -e "\u2517")
-      right_bottom_border=$(echo -e "\u251b")
-      box_break_line=$(echo -e "\u25AB")
-    ;;
-    msys )
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "\u250f")
-      right_top_border=$(echo -e "\u2513")
-      left_bottom_border=$(echo -e "\u2517")
-      right_bottom_border=$(echo -e "\u251b")
-      box_break_line=$(echo -e "\u25AB")
-    ;;
   esac
 
   # ---------------------------------------#
@@ -209,7 +155,7 @@ box-norm(){
 box-double(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu* ) 
+    linux-gnu*|cygwin|msys) 
       top_border=${double_h}
       bottom_border=${double_h}
       left_border=${double_v}
@@ -219,7 +165,7 @@ box-double(){
       left_bottom_border=$(echo -e "\u255A")
       right_bottom_border=$(echo -e "\u255D")
       box_break_line=$(echo -e "\u25AB")
-    ;;
+    ;;&
     darwin* )
       top_border=${double_h}
       bottom_border=${double_h}
@@ -231,28 +177,6 @@ box-double(){
       right_bottom_border=$(echo -e "╝")
       box_break_line=$(echo -e "▫")
     ;;
-    cygwin )
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "\u2554")
-      right_top_border=$(echo -e "\u2557")
-      left_bottom_border=$(echo -e "\u255A")
-      right_bottom_border=$(echo -e "\u255D")
-      box_break_line=$(echo -e "\u25AB")
-    ;;
-    msys )
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "\u2554")
-      right_top_border=$(echo -e "\u2557")
-      left_bottom_border=$(echo -e "\u255A")
-      right_bottom_border=$(echo -e "\u255D")
-      box_break_line=$(echo -e "\u25AB")
-    ;;
   esac
   # ---------------------------------------#
 }
@@ -261,7 +185,7 @@ box-double(){
 box-heavy(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu* ) 
+    linux-gnu*|cygwin|msys) 
       top_border=$(echo -e "\u2580")
       bottom_border=$(echo -e "\u2584")
       left_border=$(echo -e "\u258C")
@@ -271,7 +195,7 @@ box-heavy(){
       left_bottom_border=$(echo -e "\u2599")
       right_bottom_border=$(echo -e "\u259F")
       box_break_line=$(echo -e "\u25AC")
-    ;;
+    ;;&
     darwin* )
       top_border=$(echo -e "▀")
       bottom_border=$(echo -e "▄")
@@ -283,28 +207,6 @@ box-heavy(){
       right_bottom_border=$(echo -e "▟")
       box_break_line=$(echo -e "▫")
     ;;
-    cygwin )
-      top_border=$(echo -e "\u2580")
-      bottom_border=$(echo -e "\u2584")
-      left_border=$(echo -e "\u258C")
-      right_border=$(echo -e "\u2590")
-      left_top_border=$(echo -e "\u259B")
-      right_top_border=$(echo -e "\u259C")
-      left_bottom_border=$(echo -e "\u2599")
-      right_bottom_border=$(echo -e "\u259F")
-      box_break_line=$(echo -e "\u25AC")
-    ;;
-    msys )
-      top_border=$(echo -e "\u2580")
-      bottom_border=$(echo -e "\u2584")
-      left_border=$(echo -e "\u258C")
-      right_border=$(echo -e "\u2590")
-      left_top_border=$(echo -e "\u259B")
-      right_top_border=$(echo -e "\u259C")
-      left_bottom_border=$(echo -e "\u2599")
-      right_bottom_border=$(echo -e "\u259F")
-      box_break_line=$(echo -e "\u25AC")
-    ;;
   esac
   # ---------------------------------------#
 }
@@ -314,7 +216,7 @@ box-light(){
   # ---------------------------------------#
   #top_border=$(echo -e '\u23BA')
   case $OSTYPE in 
-    linux-gnu* ) 
+    linux-gnu*|cygwin|msys)
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
@@ -324,7 +226,7 @@ box-light(){
       left_bottom_border=$(echo -e "\u23BF")
       right_bottom_border=$(echo -e "\u23CC")
       box_break_line=$(echo -e "\u23AF")
-    ;;
+    ;;&
     darwin* )
       top_border=${light_h}
       bottom_border=${light_h}
@@ -336,28 +238,6 @@ box-light(){
       right_bottom_border=$(echo -e "⏌")
       box_break_line=$(echo -e "⎯")
     ;;
-    cygwin )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u23BE")
-      right_top_border=$(echo -e "\u23CB")
-      left_bottom_border=$(echo -e "\u23BF")
-      right_bottom_border=$(echo -e "\u23CC")
-      box_break_line=$(echo -e "\u23AF")
-    ;;
-    msys )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u23BE")
-      right_top_border=$(echo -e "\u23CB")
-      left_bottom_border=$(echo -e "\u23BF")
-      right_bottom_border=$(echo -e "\u23CC")
-      box_break_line=$(echo -e "\u23AF")
-    ;;
   esac
   # ---------------------------------------#
 }
@@ -365,7 +245,7 @@ box-light(){
 box-rounded(){
   # ---------------------------------------#
   case $OSTYPE in 
-    linux-gnu* ) 
+    linux-gnu*|cygwin|msys)
       top_border=${light_h}
       bottom_border=${light_h}
       left_border=${light_v}
@@ -375,7 +255,7 @@ box-rounded(){
       left_bottom_border=$(echo -e "\u2570")
       right_bottom_border=$(echo -e "\u256F")
       box_break_line=$(echo -e "\u25A2")
-    ;;
+    ;;&
     darwin* )
       top_border=${light_h}
       bottom_border=${light_h}
@@ -386,28 +266,6 @@ box-rounded(){
       left_bottom_border=$(echo -e "╰")
       right_bottom_border=$(echo -e "╯")
       box_break_line=$(echo -e "▢")
-    ;;
-    cygwin )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u256D")
-      right_top_border=$(echo -e "\u256E")
-      left_bottom_border=$(echo -e "\u2570")
-      right_bottom_border=$(echo -e "\u256F")
-      box_break_line=$(echo -e "\u25A2")
-    ;;
-    msys )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u256D")
-      right_top_border=$(echo -e "\u256E")
-      left_bottom_border=$(echo -e "\u2570")
-      right_bottom_border=$(echo -e "\u256F")
-      box_break_line=$(echo -e "\u25A2")
     ;;
   esac
   # ---------------------------------------#
