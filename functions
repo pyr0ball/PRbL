@@ -3,10 +3,10 @@
 
 # Initial Vars
 functionsrev=1.1.9
-scriptname="${BASH_SOURCE[0]##*/}"
-rundir="${BASH_SOURCE[0]%/*}"
-rundir_absolute=$(cd $rundir && pwd)
-runuser="$(whoami)"
+#scriptname="${BASH_SOURCE[0]##*/}"
+#rundir="${BASH_SOURCE[0]%/*}"
+#rundir_absolute=$(cd $rundir && pwd)
+#runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
 
