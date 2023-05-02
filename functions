@@ -414,11 +414,14 @@ popdfail(){
 }
 
 logger(){
-  #$@ 2>&1 | tee >(ts "[$scriptname][%d-%m-%y %H_%M_%S]" > $logfile) # This version of prepend requires the 'ts' utility from 'moreutils' package
   $@ 2>&1 | tee >(
     while IFS= read -r line; do
-      _line=$(echo $line | sed "s,\x1B\[[0-9;]*[mK],,g" | tr -dc '[:print:]')
-      printf '[%s] %s\n' "${scriptname}][${prettyDate}" "$_line"
+      # strip any escaped strings for logging output 
+      _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
+      # only print out non-empty lines to log
+      if [[ "$_line" != "" ]] ; then
+        printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$_line"
+      fi
     done >> $logfile
   )
 }
