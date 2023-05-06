@@ -444,6 +444,35 @@ ctrl_c(){
 	fail "User interrupted with Ctrl-C"
 }
 
+prbl-logo(){
+  echo -e \
+"
+              _!*(xL}}xvr!,.                                
+          >}KM3nLL}}}}}LLTh%5u>.                            
+       <FEnviT3Egg8888888DGnivnOKr.                         
+    .vEP?vZ88888QBB####BQ88888ZxrjNT.                       
+   !MW^LD888Q#@@@@######@@@#B888gn>P8}.                     
+  ?g2!%888BBev*<!!!!!!!!!>***^!!!!!.LB&?                    
+ >gF=Rg88#5                        ,^}#Be-                  
+ Pg'a888#B     ,unnnnn}-          .ZO_N#Bgr                 
+-gZ-g888B,                       .U88!j#B#Qs.               
+.NM-D88N!                       .j888=XQQQOQQ=              
+ 28>u8g<    ,!!!!!!!!!!!!!!!!>LpQ888K,QQgy  ,V>             
+ _OM:K?   .&#Q88888888888888#@@#888M:p##Q8G!  .             
+  ,WM!.!!^p#@@##Q88g8888QB#@@#Q888e!W#####BBg2!             
+   .u&n^yg888Q##@@@@@@@@@@#B8888K*}Q###BQQQBB##gL.          
+     _nDj?xPggg888QQQQQ888888Wx?zQ####BQB88&2vvnWQ(         
+       .^yOjLLL}jP%OEOM5suLxLjQ#######Q#@Q8Z.     r<        
+          .!}%QQNWKessaG%gB###########BQ@@@#R?.             
+              .!LP8B###Q5V%8B##B88QQB##BB#@@@@@Qe?,         
+                   _*TW#P_ !KQ#@BM^^}OB##BB#@@@@@@@Ba<      
+                        -<!. :jg##h:  _ryW8BBBB##@@@@@#}.   
+                                '!?nn?=.    .-_,=^xAQ#@@B>  
+                                                     >sQ@@? 
+                                                       _nB#,
+                                                         -hv
+"
+}
 # ensure ctrl-c to cancel script ends the entire process and not just the current function
 # trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
