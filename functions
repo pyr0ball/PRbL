@@ -421,6 +421,24 @@ logger(){
   )
 }
 
+run(){
+    _cmd=$@
+    if [[ dry_run == true ]] ; then
+        boxline "DryRun: $_cmd"
+    else
+        $_cmd
+    fi
+}
+
+run-and-log(){
+    _cmd=$@
+    if [[ dry_run == true ]] ; then
+        logger "DryRun: $_cmd"
+    else
+        logger $_cmd
+    fi
+}
+
 ctrl_c(){
   echo -e "\n"
 	fail "User interrupted with Ctrl-C"
