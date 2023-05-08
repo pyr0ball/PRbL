@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.12
+functionsrev=1.1.13
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -411,19 +411,6 @@ popdfail(){
 	fail "$@"
 }
 
-logger(){
-  $@ 2>&1 | tee >(
-    while IFS= read -r line; do
-      # strip any escaped strings for logging output 
-      _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
-      # only print out non-empty lines to log
-      if [[ "$_line" != "" ]] ; then
-        printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$_line"
-      fi
-    done >> $logfile
-  )
-}
-
 run(){
     _cmd=$@
     if [[ $dry_run != true ]] ; then
@@ -440,6 +427,23 @@ run-and-log(){
     else
         logger "DryRun: $_cmd"
     fi
+}
+
+logger(){
+  if [ ! -f $logfile ] ; then
+    run mkdir -p ${rundir%/*}
+    touch $logfile
+  fi
+  $@ 2>&1 | tee >(
+    while IFS= read -r line; do
+      # strip any escaped strings for logging output 
+      _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
+      # only print out non-empty lines to log
+      if [[ "$_line" != "" ]] ; then
+        printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$_line"
+      fi
+    done >> $logfile
+  )
 }
 
 ctrl_c(){
