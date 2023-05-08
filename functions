@@ -337,10 +337,11 @@ boxseparator(){
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
 center() {
+  local _cmd=$@
   local padding="";
   padding="$(printf '%0.1s'  \ {1..100})"
   #padding=" "
-  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}"
+  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#_cmd[@]})/2))" "${padding}" "$_cmd" 0 "$(((BOXWIDTH-1-${#_cmd})/2))" "${padding}"
 }
 
 # For printing spanned text, e.g. single-pair lists ($name...$title)
@@ -423,19 +424,19 @@ logger(){
 
 run(){
     _cmd=$@
-    if [[ dry_run == true ]] ; then
-        boxline "DryRun: $_cmd"
-    else
+    if [[ $dry_run != true ]] ; then
         $_cmd
+    else
+        boxline "DryRun: $_cmd"
     fi
 }
 
 run-and-log(){
     _cmd=$@
-    if [[ dry_run == true ]] ; then
-        logger "DryRun: $_cmd"
-    else
+    if [[ $dry_run != true ]] ; then
         logger $_cmd
+    else
+        logger "DryRun: $_cmd"
     fi
 }
 
