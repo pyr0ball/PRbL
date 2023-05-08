@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.11
+functionsrev=1.1.12
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -41,33 +41,33 @@ borderchar="#" # Sets default '#' if not already set
 
 # Colorization options
 if [[ "$TERM" != "linux" ]] ; then
-  red=$(echo -e "${ESC}[38;5;1m")   # red
-  grn=$(echo -e "${ESC}[38;5;2m")   # green
-  ylw=$(echo -e "${ESC}[38;5;3m")   # yellow
-  blu=$(echo -e "${ESC}[38;5;27m")  # blue
-  lbl=$(echo -e "${ESC}[38;5;69m")  # light blue
-  mag=$(echo -e "${ESC}[38;5;5m")   # magenta
-  cyn=$(echo -e "${ESC}[38;5;6m")   # cyan
-  pur=$(echo -e "${ESC}[38;5;135m") # purple
-  ong=$(echo -e "${ESC}[38;5;166m") # orange
-  lyl=$(echo -e "${ESC}[38;5;228m") # light yellow
-  lrd=$(echo -e "${ESC}[38;5;196m") # light red
-  gry=$(echo -e "${ESC}[38;5;240m") # Grey
-  norm=$(echo -e "${ESC}[39m")  # default/normal                                                                      
+  red="${ESC}[38;5;1m"   # red
+  grn="${ESC}[38;5;2m"   # green
+  ylw="${ESC}[38;5;3m"   # yellow
+  blu="${ESC}[38;5;27m"  # blue
+  lbl="${ESC}[38;5;69m"  # light blue
+  mag="${ESC}[38;5;5m"   # magenta
+  cyn="${ESC}[38;5;6m"   # cyan
+  pur="${ESC}[38;5;135m" # purple
+  ong="${ESC}[38;5;166m" # orange
+  lyl="${ESC}[38;5;228m" # light yellow
+  lrd="${ESC}[38;5;196m" # light red
+  gry="${ESC}[38;5;240m" # Grey
+  norm=$"${ESC}[39m"  # default/normal                                                                      
   #
-  bld=$(echo -e "${ESC}[1m")    # bold
-  unb=$(echo -e "${ESC}[21m")   # un-bold
-  dim=$(echo -e "${ESC}[2m")    # dim
-  und=$(echo -e "${ESC}[22m")   # un-dim
-  unl=$(echo -e "${ESC}[4m")    # underline
-  nln=$(echo -e "${ESC}[24")    # not-underline
-  blk=$(echo -e "${ESC}[5")     # blinking
-  unbl=$(echo -e "${ESC}[25")   # stop blinking
-  inv=$(echo -e "${ESC}[7m")    # invert
-  rsinv=$(echo -e "${ESC}[27")  # reset http://www.endmemo.com/unicode/unicodeconverter.phpnvert
-  hid=$(echo -e "${ESC}[8")     # hidden
-  unh=$(echo -e "${ESC}[28")    # unhide
-  dfl=$(echo -e "${ESC}[0m")    # restore default
+  bld="${ESC}[1m"    # bold
+  unb="${ESC}[21m"   # un-bold
+  dim="${ESC}[2m"    # dim
+  und="${ESC}[22m"   # un-dim
+  unl="${ESC}[4m"    # underline
+  nln="${ESC}[24"    # not-underline
+  blk="${ESC}[5"     # blinking
+  unbl="${ESC}[25"   # stop blinking
+  inv="${ESC}[7m"    # invert
+  rsinv="${ESC}[27"  # reset http://www.endmemo.com/unicode/unicodeconverter.phpnvert
+  hid="${ESC}[8"     # hidden
+  unh="${ESC}[28"    # unhide
+  dfl="${ESC}[0m"    # restore default
 fi
 
 # Extra Unicode Character Manipulation
