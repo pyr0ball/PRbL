@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.1.11
+functionsrev=1.1.14
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -41,33 +41,33 @@ borderchar="#" # Sets default '#' if not already set
 
 # Colorization options
 if [[ "$TERM" != "linux" ]] ; then
-  red=$(echo -e "${ESC}[38;5;1m")   # red
-  grn=$(echo -e "${ESC}[38;5;2m")   # green
-  ylw=$(echo -e "${ESC}[38;5;3m")   # yellow
-  blu=$(echo -e "${ESC}[38;5;27m")  # blue
-  lbl=$(echo -e "${ESC}[38;5;69m")  # light blue
-  mag=$(echo -e "${ESC}[38;5;5m")   # magenta
-  cyn=$(echo -e "${ESC}[38;5;6m")   # cyan
-  pur=$(echo -e "${ESC}[38;5;135m") # purple
-  ong=$(echo -e "${ESC}[38;5;166m") # orange
-  lyl=$(echo -e "${ESC}[38;5;228m") # light yellow
-  lrd=$(echo -e "${ESC}[38;5;196m") # light red
-  gry=$(echo -e "${ESC}[38;5;240m") # Grey
-  norm=$(echo -e "${ESC}[39m")  # default/normal                                                                      
+  red="${ESC}[38;5;1m"   # red
+  grn="${ESC}[38;5;2m"   # green
+  ylw="${ESC}[38;5;3m"   # yellow
+  blu="${ESC}[38;5;27m"  # blue
+  lbl="${ESC}[38;5;69m"  # light blue
+  mag="${ESC}[38;5;5m"   # magenta
+  cyn="${ESC}[38;5;6m"   # cyan
+  pur="${ESC}[38;5;135m" # purple
+  ong="${ESC}[38;5;166m" # orange
+  lyl="${ESC}[38;5;228m" # light yellow
+  lrd="${ESC}[38;5;196m" # light red
+  gry="${ESC}[38;5;240m" # Grey
+  norm=$"${ESC}[39m"  # default/normal                                                                      
   #
-  bld=$(echo -e "${ESC}[1m")    # bold
-  unb=$(echo -e "${ESC}[21m")   # un-bold
-  dim=$(echo -e "${ESC}[2m")    # dim
-  und=$(echo -e "${ESC}[22m")   # un-dim
-  unl=$(echo -e "${ESC}[4m")    # underline
-  nln=$(echo -e "${ESC}[24")    # not-underline
-  blk=$(echo -e "${ESC}[5")     # blinking
-  unbl=$(echo -e "${ESC}[25")   # stop blinking
-  inv=$(echo -e "${ESC}[7m")    # invert
-  rsinv=$(echo -e "${ESC}[27")  # reset http://www.endmemo.com/unicode/unicodeconverter.phpnvert
-  hid=$(echo -e "${ESC}[8")     # hidden
-  unh=$(echo -e "${ESC}[28")    # unhide
-  dfl=$(echo -e "${ESC}[0m")    # restore default
+  bld="${ESC}[1m"    # bold
+  unb="${ESC}[21m"   # un-bold
+  dim="${ESC}[2m"    # dim
+  und="${ESC}[22m"   # un-dim
+  unl="${ESC}[4m"    # underline
+  nln="${ESC}[24"    # not-underline
+  blk="${ESC}[5"     # blinking
+  unbl="${ESC}[25"   # stop blinking
+  inv="${ESC}[7m"    # invert
+  rsinv="${ESC}[27"  # reset http://www.endmemo.com/unicode/unicodeconverter.phpnvert
+  hid="${ESC}[8"     # hidden
+  unh="${ESC}[28"    # unhide
+  dfl="${ESC}[0m"    # restore default
 fi
 
 # Extra Unicode Character Manipulation
@@ -415,7 +415,29 @@ popdfail(){
 	fail "$@"
 }
 
+run(){
+    _cmd=$@
+    if [[ $dry_run != true ]] ; then
+        $_cmd
+    else
+        boxline "DryRun: $_cmd"
+    fi
+}
+
+run-and-log(){
+    _cmd=$@
+    if [[ $dry_run != true ]] ; then
+        logger $_cmd
+    else
+        logger "DryRun: $_cmd"
+    fi
+}
+
 logger(){
+  if [ ! -f $logfile ] ; then
+    run mkdir -p ${rundir%/*}
+    touch $logfile
+  fi
   $@ 2>&1 | tee >(
     while IFS= read -r line; do
       # strip any escaped strings for logging output 
@@ -428,11 +450,128 @@ logger(){
   )
 }
 
+# File handling functions
+
+take-backup(){
+    name="$1"
+    if [[ $update_run != true ]] ; then
+        # Check if a backup file or symbolic link already exists
+        if [[ -e "$name.bak" || -L "$name.bak" ]]; then
+            run boxline " $name.bak backup already exists"
+        else
+            # Check if the file is a hidden file (starts with a dot)
+            if [[ "$name" == .* ]]; then
+                # Add a dot to the beginning of the backup file name
+                backup_name=".${name}.bak"
+            else
+                # Create the backup file name by appending ".bak" to the original file name
+                backup_name="${name}.bak"
+            fi
+            # Copy the file to the backup file with preservation of file attributes
+            run cp -p "$name" "$backup_name"
+            # Add the original file to the list of backup files
+            backup_files+=("$name")
+            # Log the original file name to the backup file list file
+            run echo "$name" >> "$rundir/backup_files.list"
+        fi
+    fi
+}
+
+restore-backup(){
+	run echo "${#backup_files[@]}"
+	for file in "${backup_files[@]}" ; do 
+		run cp "$file".bak $file
+		run echo "$file is restored"
+	done
+    backup_files=()
+    if [ -f $rundir/backup_files.list ] ; then
+        run rm $rundir/backup_files.list
+    fi
+}
+
+install-file(){
+    local _source="$1"
+    local _destination="$2"
+    local _source_root="$3"
+    local _filename=${_source##*/}
+    local _destination_file=${_destination}/${_filename#${_source_root}}
+    installed_files+=("${_destination_file}")
+    if [[ $update_run == true ]] ; then
+        run boxline "$scriptname: added file ${_destination_file} to list"
+    else
+        run cp -p $_source $_destination_file && boxline "Installed ${_filename}" || warn "Unable to install ${_filename}"
+        run echo "${_destination_file}" >> $rundir/installed_files.list
+    fi
+}
+
+install-dir() {
+    local _source="$1"
+    local _destination="$2"
+    installed_dirs+=("$_source -> $_destination")
+    # Iterate through all files in the source directory recursively
+    while IFS= read -r -d '' source_file; do
+        # Construct the destination file path by removing the source directory path
+        # and appending it to the destination directory path
+        local _filename="${source_file#${_source}}"
+        local destination_file="${_destination}/${source_file#${_source}}"
+        # Create the parent directory of the destination file if it doesn't exist
+        # Log the destination file path to the logfile
+        #echo "$destination_file" >> "$logfile"
+        installed_files+=($destination_file)
+        if [[ $update_run == true ]] ; then
+            run boxline "$scriptname: added file ${destination_file} to list"
+        else
+            run mkdir -p "$(dirname "$destination_file")"
+            run cp -p ${_source}${_filename} $destination_file && boxline "Installed ${_filename}" || warn "Unable to install ${_filename}"
+            run echo "${destination_file}" >> $rundir/installed_files.list
+        fi
+    done < <(find "$_source" -type f -print0)
+}
+
+clone-repo(){
+    # git clone <source url> <destination>
+    local _url=$1
+    local _destination=$2
+    if [ ! -z $_destination ] ; then
+        run mkdir -p $_destination
+    fi
+    run git clone --recurse-submodules $_url $_destination
+}
+
 ctrl_c(){
   echo -e "\n"
 	fail "User interrupted with Ctrl-C"
 }
 
+prbl-logo(){
+  echo -e \
+"
+              _!*(xL}}xvr!,.                                
+          >}KM3nLL}}}}}LLTh%5u>.                            
+       <FEnviT3Egg8888888DGnivnOKr.                         
+    .vEP?vZ88888QBB####BQ88888ZxrjNT.                       
+   !MW^LD888Q#@@@@######@@@#B888gn>P8}.                     
+  ?g2!%888BBev*<!!!!!!!!!>***^!!!!!.LB&?                    
+ >gF=Rg88#5                        ,^}#Be-                  
+ Pg'a888#B     ,unnnnn}-          .ZO_N#Bgr                 
+-gZ-g888B,                       .U88!j#B#Qs.               
+.NM-D88N!                       .j888=XQQQOQQ=              
+ 28>u8g<    ,!!!!!!!!!!!!!!!!>LpQ888K,QQgy  ,V>             
+ _OM:K?   .&#Q88888888888888#@@#888M:p##Q8G!  .             
+  ,WM!.!!^p#@@##Q88g8888QB#@@#Q888e!W#####BBg2!             
+   .u&n^yg888Q##@@@@@@@@@@#B8888K*}Q###BQQQBB##gL.          
+     _nDj?xPggg888QQQQQ888888Wx?zQ####BQB88&2vvnWQ(         
+       .^yOjLLL}jP%OEOM5suLxLjQ#######Q#@Q8Z.     r<        
+          .!}%QQNWKessaG%gB###########BQ@@@#R?.             
+              .!LP8B###Q5V%8B##B88QQB##BB#@@@@@Qe?,         
+                   _*TW#P_ !KQ#@BM^^}OB##BB#@@@@@@@Ba<      
+                        -<!. :jg##h:  _ryW8BBBB##@@@@@#}.   
+                                '!?nn?=.    .-_,=^xAQ#@@B>  
+                                                     >sQ@@? 
+                                                       _nB#,
+                                                         -hv
+"
+}
 # ensure ctrl-c to cancel script ends the entire process and not just the current function
 # trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
