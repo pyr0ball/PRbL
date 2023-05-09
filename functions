@@ -377,7 +377,7 @@ subboxborder(){
 success(){
   _line="$@"
   echo -e "\n"
-  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  logger boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
   exit 0
 }
 
@@ -386,7 +386,7 @@ warn(){
   _line="$@"
   echo -e "\n"
   boxtop
-  boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  logger boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
   boxbottom
 }
 
@@ -395,7 +395,7 @@ fail(){
   _line="$@"
   echo -e "\n"
   boxtop
-  boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  logger boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
   boxbottom
   exit $ec
 }
