@@ -336,20 +336,22 @@ boxseparator(){
 # }
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
-center() {
+center(){
   #local padding="";
-  #padding="$(printf '%0.1s'  \ {1..100})"
+  padding="$(printf '%0.1s'  \ {1..100})"
   #padding=" "
-  #printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
+  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
   #printf "%s %s %s %s %s\n" "$left_border" "$padding" "$1" "$padding" "$right_border";
-  echo -e "\r${ESC}[$(((BOXWIDTH-2-${#1})/2))C$1\r${ESC}[${BOXWIDTH}C"
+  #echo -en "\r${ESC}[$(((BOXWIDTH-${#1})/2))C$@\r${ESC}[${BOXWIDTH}C\n"
 }
 
 # For printing spanned text, e.g. single-pair lists ($name...$title)
 spanner() {
   # 1: left-side-text, 2: right-side-text
+  # Spanner character:
+  spacer="."
   local _spanner="";
-  eval printf -v _spanner \'"%0.1s"\' "-"{1..$[$((BOXWIDTH-4))- 2 - ${#1} - ${#2}]}
+  eval printf -v _spanner \'"%0.1s"\' "$spacer"{1..$[$((BOXWIDTH-1))- 2 - ${#1} - ${#2}]}
   printf "%s %s %s\n" "$1" "$_spanner" "$2";
 }
 
