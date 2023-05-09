@@ -221,10 +221,10 @@ box-light(){
       bottom_border=${light_h}
       left_border=${light_v}
       right_border=${light_v}
-      left_top_border=$(echo -e "\u23BE")
-      right_top_border=$(echo -e "\u23CB")
-      left_bottom_border=$(echo -e "\u23BF")
-      right_bottom_border=$(echo -e "\u23CC")
+      left_top_border=$(echo -e "\u25AB")
+      right_top_border=$(echo -e "\u25AB")
+      left_bottom_border=$(echo -e "\u25AB")
+      right_bottom_border=$(echo -e "\u25AB")
       box_break_line=$(echo -e "\u23AF")
     ;;&
     darwin* )
@@ -232,10 +232,10 @@ box-light(){
       bottom_border=${light_h}
       left_border=${light_v}
       right_border=${light_v}
-      left_top_border=$(echo -e "⎾")
-      right_top_border=$(echo -e "⏋")
-      left_bottom_border=$(echo -e "⎿")
-      right_bottom_border=$(echo -e "⏌")
+      left_top_border=$(echo -e "▫")
+      right_top_border=$(echo -e "▫")
+      left_bottom_border=$(echo -e "▫")
+      right_bottom_border=$(echo -e "▫")
       box_break_line=$(echo -e "⎯")
     ;;
   esac
@@ -336,18 +336,22 @@ boxseparator(){
 # }
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
-center() {
-  local padding="";
+center(){
+  #local padding="";
   padding="$(printf '%0.1s'  \ {1..100})"
   #padding=" "
-  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}"
+  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
+  #printf "%s %s %s %s %s\n" "$left_border" "$padding" "$1" "$padding" "$right_border";
+  #echo -en "\r${ESC}[$(((BOXWIDTH-${#1})/2))C$@\r${ESC}[${BOXWIDTH}C\n"
 }
 
 # For printing spanned text, e.g. single-pair lists ($name...$title)
 spanner() {
   # 1: left-side-text, 2: right-side-text
+  # Spanner character:
+  spacer="."
   local _spanner="";
-  eval printf -v _spanner \'"%0.1s"\' "-"{1..$[$((BOXWIDTH-4))- 2 - ${#1} - ${#2}]}
+  eval printf -v _spanner \'"%0.1s"\' "$spacer"{1..$[$((BOXWIDTH-1))- 2 - ${#1} - ${#2}]}
   printf "%s %s %s\n" "$1" "$_spanner" "$2";
 }
 
@@ -556,6 +560,30 @@ trim() {
   printf '%s' "$var"
 }
 
+# Retrieve and run a script from url
+run-from-url(){
+  url=$1
+  args=${*:2}
+  # check the interpreter using the shebang at the top of the file
+  interpreter=$(curl -ks $url | head -n 1 | sed -e 's/\#\!//g' 2>/dev/null)
+  boxline "interpreter=$interpreter"
+  # In case of missing shebang, default to bash
+  if [ -z $interpreter ] ; then
+    interpreter="/bin/bash"
+  fi
+  logger boxline "Running online script $url with args $args"
+  if [[ "$interpreter" == "/bin/bash" ]] ; then
+    run curl -H 'Cache-Control: no-cache' -ks $url | $interpreter -s -- $args
+  else
+    run curl -H 'Cache-Control: no-cache' -ks $url > ${url##*/}
+    run $interpreter ${url##*/} $args 
+    ec=$?
+    run rm ${url##*/}
+  fi
+  return $ec
+}
+
+# fancy script exits
 ctrl_c(){
   echo -e "\n"
 	fail "User interrupted with Ctrl-C"
