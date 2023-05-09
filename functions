@@ -554,7 +554,7 @@ chained-grep(){
 
 # Remove leading/trailing whitespace
 trim() {
-  local var=$1
+  local var=${@:2}
   var="${var#"${var%%[![:space:]]*}"}"
   var="${var%"${var##*[![:space:]]}"}"
   printf '%s' "$var"
@@ -570,15 +570,17 @@ strip-html-tags() {
 
 run-from-url(){
   url=$1
+  # boxline "url=$url"
   args=${*:2}
+  # boxline "args=$args"
   # check the interpreter using the shebang at the top of the file
-  interpreter=$(curl -ks $url | head -n 1 | sed -e 's/\#\!//g' 2>/dev/null)
-  boxline "interpreter=$interpreter"
+  interpreter=$(curl -ks $url | head -n 1 | cut -c 2- 2>/dev/null)
+  # boxline "interpreter=$interpreter"
   # In case of missing shebang, default to bash
   if [ -z $interpreter ] ; then
     interpreter="/bin/bash"
   fi
-  logger boxline "Running online script $url with args $args"
+  boxline "Running online script $url with args $args"
   if [[ "$interpreter" == "/bin/bash" ]] ; then
     run curl -H 'Cache-Control: no-cache' -ks $url | $interpreter -s -- $args
   else
