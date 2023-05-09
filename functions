@@ -509,7 +509,7 @@ install-dir() {
 success(){
   _line="$@"
   echo -e "\n"
-  logger boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
   exit 0
 }
 
@@ -518,7 +518,7 @@ warn(){
   _line="$@"
   echo -e "\n"
   boxtop
-  logger boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
   boxbottom
 }
 
@@ -527,7 +527,7 @@ fail(){
   _line="$@"
   echo -e "\n"
   boxtop
-  logger boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
   boxbottom
   exit $ec
 }
