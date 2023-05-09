@@ -540,7 +540,6 @@ clone-repo(){
     run git clone --recurse-submodules $_url $_destination
 }
 
-<<<<<<< HEAD
 # Executes: grep "$1" | grep "$2" | grep "$3" | ...
 chained-grep(){
     local pattern="$1"
@@ -561,9 +560,14 @@ trim() {
   printf '%s' "$var"
 }
 
+strip-html-tags() {
+  local input="$1"
+  local stripped=$(echo "$input" | sed 's/<[^>]*>//g')
+  echo "$stripped"
+}
+
 # Retrieve and run a script from url
-=======
->>>>>>> 6ffd9c2624df4c2faacda4d77f33cc9ebb17fae5
+
 run-from-url(){
   url=$1
   args=${*:2}
@@ -586,10 +590,8 @@ run-from-url(){
   return $ec
 }
 
-<<<<<<< HEAD
 # fancy script exits
-=======
->>>>>>> 6ffd9c2624df4c2faacda4d77f33cc9ebb17fae5
+
 ctrl_c(){
   echo -e "\n"
 	fail "User interrupted with Ctrl-C"
