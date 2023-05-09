@@ -89,6 +89,7 @@ boxborder \
 #boxborder
 
 # Example for select_option
+
 echo "Select one option using up/down keys and enter to confirm:"
 echo
 
@@ -101,6 +102,7 @@ echo "Choosen index = $choice"
 echo "        value = ${options[$choice]}"
 
 # Examples for select_opt
+
 case `select_opt "Yes" "No" "Cancel"` in
   0) echo "selected Yes";;
   1) echo "selected No";;
