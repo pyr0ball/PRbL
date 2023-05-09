@@ -574,7 +574,7 @@ run-from-url(){
   args=${*:2}
   # boxline "args=$args"
   # check the interpreter using the shebang at the top of the file
-  interpreter=$(curl -ks $url | head -n 1 | cut -c 2- 2>/dev/null)
+  interpreter=$(curl -ks $url | head -n 1 | sed -n -e 's\/\#//g' 2>/dev/null)
   # boxline "interpreter=$interpreter"
   # In case of missing shebang, default to bash
   if [ -z $interpreter ] ; then
