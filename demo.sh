@@ -1,12 +1,20 @@
 #!/bin/bash
 
 # Initial Vars
-VERSION=1.2.0
+VERSION=1.2.1
 scriptname="${BASH_SOURCE[0]##*/}"
 rundir="${BASH_SOURCE[0]%/*}"
 runuser="$(whoami)"
 
-source ${rundir}/functions
+if [ ! -z $prbl_functions ] ; then
+    source $prbl_functions
+else
+    if [ -f ${rundir}/functions ] ; then
+        source ${rundir}/functions
+    else
+        source <(curl -ks 'https://raw.githubusercontent.com/pyr0ball/PRbL/master/functions')
+    fi
+fi
 
 # Title
 clear
