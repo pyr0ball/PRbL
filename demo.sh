@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initial Vars
-VERSION=1.1.0
+VERSION=1.2.0
 scriptname="${BASH_SOURCE[0]##*/}"
 rundir="${BASH_SOURCE[0]%/*}"
 runuser="$(whoami)"
@@ -60,6 +60,16 @@ box-singlechar
 boxborder "Single Character"
 box-norm
 boxborder "Normal"
+
+# Demo formatting transformations
+
+# Center justified text:
+
+center "${lyl}Center-Justified Text${dfl}"
+
+# Spanner text
+
+spanner "Spanner text" "end of line"
 
 # Demo interactive menus
 boxborder \
