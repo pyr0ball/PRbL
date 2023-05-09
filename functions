@@ -321,12 +321,31 @@ boxbottom() {
 }
 
 boxline() {
-  echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
+  logger echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
 }
 
 boxseparator(){
   repchar "$box_break_line" $((BOXWIDTH-3))
   echo
+}
+
+boxborder(){
+  boxtop
+  for line in "$@" ; do
+    boxline "$line"
+  done
+  boxbottom
+}
+
+subboxborder(){
+  BOXWIDTH_ORG=$BOXWIDTH
+  BOXWIDTH=$(($BOXWIDTH*75/100))
+  boxline $(boxtop)
+  for line in "$@" ; do
+    boxline $(boxline "$line")
+  done
+  boxline $(boxbottom)
+  BOXWIDTH=$BOXWIDTH_ORG
 }
 
 # # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
@@ -355,50 +374,7 @@ spanner() {
   printf "%s %s %s\n" "$1" "$_spanner" "$2";
 }
 
-boxborder(){
-  boxtop
-  for line in "$@" ; do
-    boxline "$line"
-  done
-  boxbottom
-}
-
-subboxborder(){
-  BOXWIDTH_ORG=$BOXWIDTH
-  BOXWIDTH=$(($BOXWIDTH*75/100))
-  boxline $(boxtop)
-  for line in "$@" ; do
-    boxline $(boxline "$line")
-  done
-  boxline $(boxbottom)
-  BOXWIDTH=$BOXWIDTH_ORG
-}
-
-success(){
-  _line="$@"
-  echo -e "\n"
-  logger boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
-  exit 0
-}
-
-warn(){
-  ec=$?
-  _line="$@"
-  echo -e "\n"
-  boxtop
-  logger boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
-  boxbottom
-}
-
-fail(){
-  ec=$?
-  _line="$@"
-  echo -e "\n"
-  boxtop
-  logger boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
-  boxbottom
-  exit $ec
-}
+# Workflow and logging
 
 pushd(){
   command pushd "$@" > /dev/null
@@ -529,6 +505,32 @@ install-dir() {
 }
 
 # Utilities
+
+success(){
+  _line="$@"
+  echo -e "\n"
+  logger boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  exit 0
+}
+
+warn(){
+  ec=$?
+  _line="$@"
+  echo -e "\n"
+  boxtop
+  logger boxline "${lrd}WARNING${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  boxbottom
+}
+
+fail(){
+  ec=$?
+  _line="$@"
+  echo -e "\n"
+  boxtop
+  logger boxline "${lrd}FAILED${lyl}[${ong}code=${red}$ec${lyl}]: ${_line}${dfl}"
+  boxbottom
+  exit $ec
+}
 
 clone-repo(){
     # git clone <source url> <destination>
