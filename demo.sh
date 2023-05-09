@@ -1,12 +1,20 @@
 #!/bin/bash
 
 # Initial Vars
-VERSION=1.1.0
+VERSION=1.2.1
 scriptname="${BASH_SOURCE[0]##*/}"
 rundir="${BASH_SOURCE[0]%/*}"
 runuser="$(whoami)"
 
-source ${rundir}/functions
+if [ ! -z $prbl_functions ] ; then
+    source $prbl_functions
+else
+    if [ -f ${rundir}/functions ] ; then
+        source ${rundir}/functions
+    else
+        source <(curl -ks 'https://raw.githubusercontent.com/pyr0ball/PRbL/master/functions')
+    fi
+fi
 
 # Title
 clear
@@ -61,6 +69,16 @@ boxborder "Single Character"
 box-norm
 boxborder "Normal"
 
+# Demo formatting transformations
+
+# Center justified text:
+
+center "${lyl}Center-Justified Text${dfl}"
+
+# Spanner text
+
+spanner "Spanner text" "end of line"
+
 # Demo interactive menus
 boxborder \
    "${lyl}Keyboard Interactive Menus${dfl}"\
@@ -71,6 +89,7 @@ boxborder \
 #boxborder
 
 # Example for select_option
+
 echo "Select one option using up/down keys and enter to confirm:"
 echo
 
@@ -83,6 +102,7 @@ echo "Choosen index = $choice"
 echo "        value = ${options[$choice]}"
 
 # Examples for select_opt
+
 case `select_opt "Yes" "No" "Cancel"` in
   0) echo "selected Yes";;
   1) echo "selected No";;
