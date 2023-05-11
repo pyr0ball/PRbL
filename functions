@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.2.1
+functionsrev=1.3.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -320,8 +320,14 @@ boxbottom() {
   echo
 }
 
-boxline() {
-  logger echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
+boxlinelog() {
+  local _cmd=${@:1}
+  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
+  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
+}
+
+boxline(){
+  echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
 }
 
 boxseparator(){
@@ -333,6 +339,18 @@ boxborder(){
   boxtop
   for line in "$@" ; do
     boxline "$line"
+  done
+  boxbottom
+}
+
+boxborderlog(){
+  local _cmd=()
+  boxtop
+  for line in "$@" ; do
+    _cmd+=("$line")
+  done
+  for line in ${_cmd[@]} ; do
+    boxlinelog "$line"
   done
   boxbottom
 }
