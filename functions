@@ -1083,4 +1083,69 @@ compare-versions() {
     fi
 }
 
+find-pmgr(){
+    # OS distribution auto-detection
+  if type lsb_release >/dev/null 2>&1; then
+      # linuxbase.org
+      OS=$(lsb_release -si)
+      OS=$(lsb_release -si)
+      VER=$(lsb_release -sr)
+  elif [ -f /etc/debian_version ]; then
+      # Older Debian/Ubuntu/etc.
+      ID=debian
+      OS=Debian
+      VER=$(cat /etc/debian_version)
+  elif [ -f /etc/lsb-release ]; then
+      # For Arch and some versions of Debian/Ubuntu without lsb_release command
+      . /etc/lsb-release
+      ID=$DISTRIB_ID
+      OS=$DISTRIB_ID
+      VER=$DISTRIB_RELEASE
+      VER=${VER:-$LSB_VERSION}
+  elif [ -f /etc/os-release ]; then
+      # freedesktop.org arch and systemd
+      . /etc/os-release
+      OS=$NAME
+      VER=$VERSION_ID
+      VER=${VER:-$VERSION}
+  elif [ -f /etc/redhat-release ]; then
+      # Older Red Hat, CentOS, etc.
+      OS=$(cat /etc/redhat-release | awk '{print $1}')
+  else
+      # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
+      OS=$(uname -s)
+      VER=$(uname -r)
+  fi
+
+  # Match distribution with available utilities
+  case $ID in
+    amzn | centos | fedora | rhel)
+      online_pmgr="yum"
+      offline_pmgr="rpm"
+      ;;
+    arch | Arch | manjaro)
+      online_pmgr="pacman"
+      offline_pmgr="pacman"
+      ;;
+    debian | ubuntu)
+      online_pmgr="apt-get"
+      offline_pmgr="dpkg"
+      ;;
+    opensuse)
+      online_pmgr="zypper"
+      offline_pmgr="zypper"
+      ;;
+    slackware)
+      online_pmgr="slackpkg"
+      offline_pmgr="installpkg"
+      ;;
+    sles)
+      online_pmgr="zypper"
+      offline_pmgr="rpm"
+      ;;
+    ubuntu
+  esac
+    "dpkg" "brew" "yum" "gdebi" "apt-get" "pacman" "emerge" "zypper" "dnf" "rpm"
+}
+
 set-boxtype
