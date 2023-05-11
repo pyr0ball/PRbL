@@ -1068,7 +1068,7 @@ check-prbl-version(){
   vercomp 
 }
 
-compare-versions() {
+compare-versions(){
     vercomp $1 $2
     case $? in
         0) op='=';;
@@ -1087,7 +1087,7 @@ find-pmgr(){
     # OS distribution auto-detection
   if type lsb_release >/dev/null 2>&1; then
       # linuxbase.org
-      OS=$(lsb_release -si)
+      ID=$(lsb_release -si)
       OS=$(lsb_release -si)
       VER=$(lsb_release -sr)
   elif [ -f /etc/debian_version ]; then
@@ -1105,6 +1105,8 @@ find-pmgr(){
   elif [ -f /etc/os-release ]; then
       # freedesktop.org arch and systemd
       . /etc/os-release
+      ID=${ID:-VERSION_ID}
+      ID=${ID:-VERSION}
       OS=$NAME
       VER=$VERSION_ID
       VER=${VER:-$VERSION}
@@ -1127,7 +1129,7 @@ find-pmgr(){
       online_pmgr="pacman"
       offline_pmgr="pacman"
       ;;
-    debian | ubuntu)
+    debian | ubuntu | Ubuntu)
       online_pmgr="apt-get"
       offline_pmgr="dpkg"
       ;;
@@ -1143,9 +1145,135 @@ find-pmgr(){
       online_pmgr="zypper"
       offline_pmgr="rpm"
       ;;
-    ubuntu
   esac
-    "dpkg" "brew" "yum" "gdebi" "apt-get" "pacman" "emerge" "zypper" "dnf" "rpm"
+          if packageExtension == 'deb' and ipm == 'dpkg':
+            pmgr = "dpkg"
+            pre = ""
+            if commandType == "install":
+                pre = "echo 'yes' | sudo "
+                post = " -i "
+            elif commandType == "queryLocalInstall":
+                pre = "sudo "
+                post = " -l "+packageName+" | grep -ic 'no packagesfound\|error'"
+            elif commandType == "queryLocalVer":
+                pre = "sudo "
+                post = " -l "+packageName+" | grep ii"
+            elif commandType == "remove":
+                pre = "echo 'yes' | sudo "
+                post  = " -r "
+            elif commandType == "queryAvailVer":
+                pre = "sudo "
+                post = " -I "+packageName+" | grep -i version"
+            pmgrCMD = pre+ipm+post
+
+        elif ipm == 'pacman':
+            pmgr = 'pacman'
+            pre = "sudo "
+            if commandType == "install":
+                post = " -S --noconfirm "+packageName
+            elif commandType == "queryLocalInstall":
+                pre = "if [[ $(sudo "
+                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -ic 'installed') == 1 ]] ; then echo 0 ; else echo 1 ; fi"
+            elif commandType == "queryLocalVersion":
+                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -i Installed | awk '{print $2}'"
+            elif commandType == "remove":
+                post  = " -R --noconfirm "+packageName
+            elif commandType == "queryAvailVer":
+                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -iv 'installed' | awk '{print $2}'"
+            pmgrCMD = pre+pmgr+post
+
+        elif ipm == 'apt-get' or ipm == 'apt':
+            pmgr = "apt"
+            pre = "sudo "
+            if commandType == "install":
+                post = "-get install -y "+packageName
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+" | grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy "+packageName+" | grep -i Installed | awk '{print $2}'"
+            elif commandType == "remove":
+                post  = "-get remove -y "+packageName
+            elif commandType == "queryAvailVer":
+                post = " list "+packageName+" 2>&1 | grep '^"+packageName+"\/' | head -n 1 | awk '{print $2}'"
+            pmgrCMD = pre+pmgr+post
+
+        elif ipm == 'yum' or ipm == 'dnf':
+            pmgr = ipm
+            pre = "sudo "
+            if commandType == "install":
+                post = "-get install -y "+packageName
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy "+packageName+" | grep -i Installed "
+            elif commandType == "remove":
+                post  = "-get remove -y"+packageName
+            elif commandType == "queryAvailVer":
+                post = "-I "+packageName+" | grep -i version"
+            pmgrCMD = pre+pmgr+post
+
+
+        # TODO: All package managers beyond this point need to be reworked to correctly function
+        elif ipm == 'emerge':
+            pmgr = "apt"
+            pre = "sudo "
+            if commandType == "install":
+                post = "-get install -y "
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy | grep -i Installed "
+            elif commandType == "remove":
+                post  = "-get remove -y"
+            elif commandType == "queryAvailVer":
+                post = "-I | grep -i version"
+            pmgrCMD = pre+pmgr+post
+
+        elif ipm == 'zypper':
+            pmgr = "apt"
+            pre = "sudo "
+            if commandType == "install":
+                post = "-get install -y "
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy | grep -i Installed "
+            elif commandType == "remove":
+                post  = "-get remove -y"
+            elif commandType == "queryAvailVer":
+                post = "-I | grep -i version"
+            pmgrCMD = pre+pmgr+post
+
+        elif ipm == 'brew':
+            pmgr = "apt"
+            pre = "sudo "
+            if commandType == "install":
+                post = "-get install -y "+packageName
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy "+packageName+" | grep -i Installed "
+            elif commandType == "remove":
+                post  = "-get remove -y "+packageName
+            elif commandType == "queryAvailVer":
+                post = "-I "+packageName+" | grep '^"+packageName+" -"
+            pmgrCMD = pre+pmgr+post
+
+        elif ipm == 'gdebi' and packageExtension == 'deb':
+            pmgr = "apt"
+            pre = "sudo "
+            pCMD = pre+pmgr
+            if commandType == "install":
+                post = "-get install -y "+packageName
+            elif commandType == "queryLocalInstall":
+                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
+            elif commandType == "queryLocalVersion":
+                post = "-cache policy "+packageName+" | grep -i Installed "
+            elif commandType == "remove":
+                post  = "-get remove -y "+packageName
+            elif commandType == "queryAvailVer":
+                post = "-I "+packageName+" | grep -i version "
+            pmgrCMD = pCMD+post
 }
 
 set-boxtype
