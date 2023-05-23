@@ -1146,134 +1146,129 @@ find-pmgr(){
       offline_pmgr="rpm"
       ;;
   esac
-          if packageExtension == 'deb' and ipm == 'dpkg':
-            pmgr = "dpkg"
-            pre = ""
-            if commandType == "install":
-                pre = "echo 'yes' | sudo "
-                post = " -i "
-            elif commandType == "queryLocalInstall":
-                pre = "sudo "
-                post = " -l "+packageName+" | grep -ic 'no packagesfound\|error'"
-            elif commandType == "queryLocalVer":
-                pre = "sudo "
-                post = " -l "+packageName+" | grep ii"
-            elif commandType == "remove":
-                pre = "echo 'yes' | sudo "
-                post  = " -r "
-            elif commandType == "queryAvailVer":
-                pre = "sudo "
-                post = " -I "+packageName+" | grep -i version"
-            pmgrCMD = pre+ipm+post
 
-        elif ipm == 'pacman':
-            pmgr = 'pacman'
-            pre = "sudo "
-            if commandType == "install":
-                post = " -S --noconfirm "+packageName
-            elif commandType == "queryLocalInstall":
-                pre = "if [[ $(sudo "
-                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -ic 'installed') == 1 ]] ; then echo 0 ; else echo 1 ; fi"
-            elif commandType == "queryLocalVersion":
-                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -i Installed | awk '{print $2}'"
-            elif commandType == "remove":
-                post  = " -R --noconfirm "+packageName
-            elif commandType == "queryAvailVer":
-                post = " -Ss "+packageName+" | grep '/"+packageName+"[^-,^_]' | grep -iv 'installed' | awk '{print $2}'"
-            pmgrCMD = pre+pmgr+post
+install_packages(){
+  declare -a packages=()
+  declare -a offline_packages=()
 
-        elif ipm == 'apt-get' or ipm == 'apt':
-            pmgr = "apt"
-            pre = "sudo "
-            if commandType == "install":
-                post = "-get install -y "+packageName
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+" | grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy "+packageName+" | grep -i Installed | awk '{print $2}'"
-            elif commandType == "remove":
-                post  = "-get remove -y "+packageName
-            elif commandType == "queryAvailVer":
-                post = " list "+packageName+" 2>&1 | grep '^"+packageName+"\/' | head -n 1 | awk '{print $2}'"
-            pmgrCMD = pre+pmgr+post
+  # Separate package names and file arguments
+  for arg in "$@"; do
+    if [[ -f $arg ]]; then
+      offline_packages+=("$arg")
+    else
+      packages+=("$arg")
+    fi
+  done
 
-        elif ipm == 'yum' or ipm == 'dnf':
-            pmgr = ipm
-            pre = "sudo "
-            if commandType == "install":
-                post = "-get install -y "+packageName
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy "+packageName+" | grep -i Installed "
-            elif commandType == "remove":
-                post  = "-get remove -y"+packageName
-            elif commandType == "queryAvailVer":
-                post = "-I "+packageName+" | grep -i version"
-            pmgrCMD = pre+pmgr+post
+  local distro=""
+  local package_manager=""
 
+  # Detect distribution
+  if [ -f /etc/os-release ]; then
+    distro=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
+  elif [ -f /etc/lsb-release ]; then
+    distro=$(awk -F= '/^DISTRIB_ID=/{print $2}' /etc/lsb-release)
+  elif [ -f /etc/debian_version ]; then
+    distro="debian"
+  elif [ -f /etc/redhat-release ]; then
+    distro="rhel"
+  elif [ -f /etc/SuSE-release ]; then
+    distro="opensuse"
+  elif [ -f /etc/slackware-version ]; then
+    distro="slackware"
+  elif [ "$(uname)" == "Darwin" ]; then
+    distro="macos"
+  else
+    echo "Unsupported distribution. Unable to determine the package manager."
+    return 1
+  fi
 
-        # TODO: All package managers beyond this point need to be reworked to correctly function
-        elif ipm == 'emerge':
-            pmgr = "apt"
-            pre = "sudo "
-            if commandType == "install":
-                post = "-get install -y "
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy | grep -i Installed "
-            elif commandType == "remove":
-                post  = "-get remove -y"
-            elif commandType == "queryAvailVer":
-                post = "-I | grep -i version"
-            pmgrCMD = pre+pmgr+post
+  # Detect package manager
+  case "$distro" in
+    "debian"|"ubuntu")
+      package_manager="apt-get"
+      ;;
+    "fedora"|"centos"|"rhel")
+      package_manager="yum"
+      ;;
+    "opensuse")
+      package_manager="zypper"
+      ;;
+    "arch")
+      package_manager="pacman"
+      ;;
+    "slackware")
+      package_manager="pkgtool"
+      ;;
+    "macos")
+      package_manager="brew"
+      ;;
+    *)
+      echo "Unsupported distribution. Unable to determine the package manager."
+      return 1
+      ;;
+  esac
 
-        elif ipm == 'zypper':
-            pmgr = "apt"
-            pre = "sudo "
-            if commandType == "install":
-                post = "-get install -y "
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy | grep -i Installed "
-            elif commandType == "remove":
-                post  = "-get remove -y"
-            elif commandType == "queryAvailVer":
-                post = "-I | grep -i version"
-            pmgrCMD = pre+pmgr+post
-
-        elif ipm == 'brew':
-            pmgr = "apt"
-            pre = "sudo "
-            if commandType == "install":
-                post = "-get install -y "+packageName
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy "+packageName+" | grep -i Installed "
-            elif commandType == "remove":
-                post  = "-get remove -y "+packageName
-            elif commandType == "queryAvailVer":
-                post = "-I "+packageName+" | grep '^"+packageName+" -"
-            pmgrCMD = pre+pmgr+post
-
-        elif ipm == 'gdebi' and packageExtension == 'deb':
-            pmgr = "apt"
-            pre = "sudo "
-            pCMD = pre+pmgr
-            if commandType == "install":
-                post = "-get install -y "+packageName
-            elif commandType == "queryLocalInstall":
-                post = "-cache policy "+packageName+"| grep -ic 'none\|Unable'"
-            elif commandType == "queryLocalVersion":
-                post = "-cache policy "+packageName+" | grep -i Installed "
-            elif commandType == "remove":
-                post  = "-get remove -y "+packageName
-            elif commandType == "queryAvailVer":
-                post = "-I "+packageName+" | grep -i version "
-            pmgrCMD = pCMD+post
+  # Install packages using package manager
+  case "$package_manager" in
+    "apt-get")
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo apt-get update
+        sudo apt-get install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo dpkg -i "${offline_packages[@]}"
+      fi
+      ;;
+    "yum")
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo yum install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo rpm -i "${offline_packages[@]}"
+      fi
+      ;;
+    "zypper")
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo zypper refresh
+        sudo zypper install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo rpm -i "${offline_packages[@]}"
+      fi
+      ;;
+    "pacman")
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo pacman -Syu
+        sudo pacman -S "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo pacman -U "${offline_packages[@]}"
+      fi
+      ;;
+    "pkgtool")
+      for package in "${packages[@]}"; do
+        sudo installpkg "$package"
+      done
+      for package_file in "${offline_packages[@]}"; do
+        sudo installpkg "$package_file"
+      done
+      ;;
+    "brew")
+      if [ "${#packages[@]}" -gt 0 ]; then
+        brew install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        for package_file in "${offline_packages[@]}"; do
+          brew install "$package_file"
+        done
+      fi
+      ;;
+    *)
+      echo "Unsupported package manager."
+      return 1
+      ;;
+  esac
 }
 
 set-boxtype
