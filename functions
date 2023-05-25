@@ -2,7 +2,9 @@
 # pyr0ball script functions library
 
 # Initial Vars
+functionsrev=1.5.0
 functionsrev=1.4.0
+functionsrev=1.5.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
