@@ -10,6 +10,9 @@ functionsrev=1.5.1
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
 
+# ensure ctrl-c to cancel script ends the entire process and not just the current function
+# trap ctrl_c INT # Commented out by default to prevent abnormal background exits
+
 # return any cursor mods to normal on exit
 cleanup(){
   tput cnorm
@@ -376,26 +379,18 @@ run-and-log(){
     fi
 }
 
-logger(){
-  if [ ! -z $logfile ] ; then
-    if [ ! -f $logfile ] ; then
-      run mkdir -p ${rundir%/*}
-      touch $logfile
-    fi
-    $@ 2>&1 | tee >(
-      while IFS= read -r line; do
-        # strip any escaped strings for logging output 
-        _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
-        # only print out non-empty lines to log
-        if [[ "$_line" != "" ]] ; then
-          printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$_line"
-        fi
-      done >> $logfile
-    )
-  else
-    $@
-  fi
-}
+logger(){ 
+  if [[ -w "$logfile" ]]; then 
+    "$@" 2>&1 | tee -a "$logfile" | while IFS= read -r line; do 
+      # strip any escaped strings for logging output  
+      _line="${line//[$'\t\r\x01-\x1F\x7F-\xFF']}"  
+      # only print out non-empty lines to log  
+      [[ -n $_line ]] && printf '[%s][%s] %s\n' "$scriptname" "$pretty_date" "$_line" >> "$logfile"  
+    done 
+  else 
+    "$@" 
+  fi 
+} 
 
 # File handling functions
 
@@ -573,38 +568,35 @@ ctrl_c(){
 }
 
 # Cosmetics
-
+PRBL_LOGO="
+              ${ESC}[38;5;202m_!*(xL}}xvr!,.${dfl}                                
+          ${ESC}[38;5;202m>}KM3${ong}nLL}}}}}LLTh${ESC}[38;5;202m%5u>.${dfl}                            
+       ${ESC}[38;5;202m<FE${ong}nvi${ESC}[38;5;202mT3Egg8888888DGn${ong}ivn${ESC}[38;5;202mOKr.${dfl}                         
+    ${ESC}[38;5;202m.vEP${ong}?v${ESC}[38;5;202mZ88888${ong}Q${ESC}[38;5;178mB${ylw}B####B${ESC}[38;5;178mQ${ESC}[38;5;202m88888Zx${ong}rj${ESC}[38;5;202mNT.${dfl}                       
+   ${ESC}[38;5;202m!MW${ong}^L${ESC}[38;5;202mD888${ESC}[38;5;178mQ${ylw}#@@${ESC}[38;5;178m@${ong}@${ESC}[38;5;202m######${ESC}[38;5;178m@${ylw}@@#B${ESC}[38;5;202m888g${ong}n>P${ESC}[38;5;202m8}.${dfl}                     
+  ${ESC}[38;5;202m?g${ong}2!${ESC}[38;5;202m%888${ESC}[38;5;178mB${ylw}B${ESC}[38;5;178mev*${ong}<!!!!!!!!!>${ESC}[38;5;178m***^${ong}!!!!!.L${ESC}[38;5;202mB&?${dfl}                    
+ ${ESC}[38;5;202m>gF${ong}=${ESC}[38;5;202mRg8${ong}8${ylw}#5${dfl}                        ${ESC}[38;5;202m,${ong}^}${ESC}[38;5;202m#Be-${dfl}                  
+ ${ESC}[38;5;202mPg${ong}'${ESC}[38;5;202ma88${ong}8${ylw}#B     ${ESC}[38;5;202m,unnnnn}-          .ZO${ong}_${ESC}[38;5;202mN${ESC}[38;5;208m#B${ESC}[38;5;202mgr${dfl}                 
+${ESC}[38;5;202m-gZ${ong}-${ESC}[38;5;202mg88${ong}8${ylw}B,                       ${ESC}[38;5;202m.U88${ong}!${ESC}[38;5;202mj${ESC}[38;5;208m#B#${ESC}[38;5;202m${ESC}[38;5;202mQs.${dfl}               
+${ESC}[38;5;202m.NM${ong}-${ESC}[38;5;202mD88${ong}N${ylw}!                       .${ESC}[38;5;202mj888${ong}=${ESC}[38;5;202mX${ESC}[38;5;208mQQ${ESC}[38;5;202mQ${ong}O${ESC}[38;5;202mQQ=${dfl}              
+ ${ESC}[38;5;202m28${ong}>u${ESC}[38;5;202m8g<    ${ESC}[38;5;178m,${ong}!!!!!!!!!!!!!!!!${ESC}[38;5;178m>Lp${ESC}[38;5;202mQ888K${ong},${ESC}[38;5;202mQQ${ESC}[38;5;208mg${ESC}[38;5;202my  ,V>${dfl}             
+ ${ESC}[38;5;202m_OM${ong}:K${ESC}[38;5;202m?   ${ylw}.&#${ong}Q${ESC}[38;5;202m88888888888888${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#${ESC}[38;5;202m888M${ong}:p${ESC}[38;5;202m#${ESC}[38;5;208m#Q${ESC}[38;5;202m8G!  .${dfl}             
+  ${ESC}[38;5;202m,WM${ong}!.!!${ESC}[38;5;202m^p${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#${ong}#${ESC}[38;5;202mQ88g8888Q${ong}B${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#Q${ESC}[38;5;202m888e${ong}!W${ESC}[38;5;202m#${ESC}[38;5;208m####${ESC}[38;5;202mBBg2!${dfl}             
+   ${ESC}[38;5;202m.u&n${ong}^y${ESC}[38;5;202mg88${ong}8${ESC}[38;5;178mQ${ylw}##@${ESC}[38;5;178m@${ong}@${ESC}[38;5;202m@@@${ong}@${ESC}[38;5;178m@@${ylw}@#${ESC}[38;5;178mB8${ong}8${ESC}[38;5;202m88K${ong}*}${ESC}[38;5;202mQ${ESC}[38;5;208m###${ESC}[38;5;202mBQ${ong}Q${ESC}[38;5;202mQ${ESC}[38;5;208mBB${ESC}[38;5;202m##gL.${dfl}          
+     ${ESC}[38;5;202m_nD${ong}j?${ESC}[38;5;202mxmPggg${ESC}[38;5;178m8${ylw}88Q${ESC}[38;5;178mQQQ${ylw}Q8${ESC}[38;5;178m88${ong}88${ESC}[38;5;202m8Wx${ong}?z${ESC}[38;5;202mQ${ESC}[38;5;208m#######${ESC}[38;5;202mQ${ESC}[38;5;208m#${ong}@${ESC}[38;5;202mQ8Z.     r<${dfl}        
+       ${ESC}[38;5;202m.^y${ong}Oj${ESC}[38;5;202mLLL${ESC}[38;5;208m}${ESC}[38;5;202mjP${ong}%OEOM${ESC}[38;5;202m5suLxL${ong}jQ${ESC}[38;5;202m#${ESC}[38;5;208m######${ESC}[38;5;214mQ${ESC}[38;5;208m###${ESC}[38;5;202mB88&2${ong}vvn${ESC}[38;5;202mWQ(${dfl}         
+          ${ESC}[38;5;202m.!}${ong}%QQNWKessaG%gB${ESC}[38;5;202m###${ESC}[38;5;208m########${ESC}[38;5;202mB${ESC}[38;5;214mQ@@@${ESC}[38;5;208m#${ESC}[38;5;202mR?.${dfl}             
+              ${ESC}[38;5;202m.!LP${ESC}[38;5;208m8B${ESC}[38;5;214m##${ESC}[38;5;202m#Q${ong}5${ESC}[38;5;202mV%8${ESC}[38;5;208mB##B88${ong}QQ${ESC}[38;5;202mB${ESC}[38;5;208m##B${ESC}[38;5;202mB${ESC}[38;5;214m#@@@@@${ong}Q${ESC}[38;5;202me?,${dfl}         
+                   ${ESC}[38;5;202m_*${ESC}[38;5;208mTW${ESC}[38;5;214m#${ESC}[38;5;202mP_ !K${ESC}[38;5;208mQ${ESC}[38;5;214m#${ESC}[38;5;202m@${ong}BM^^}${ESC}[38;5;202mOB${ESC}[38;5;208m##BB#${ESC}[38;5;202m#${ESC}[38;5;214m@@@#B${ESC}[38;5;202ma<${dfl}      
+                        ${ESC}[38;5;202m-${ESC}[38;5;208m<${ESC}[38;5;202m!. :j${ESC}[38;5;208mg${ESC}[38;5;214m##${ESC}[38;5;202mh:  _ry${ESC}[38;5;208mW8BBB${ESC}[38;5;202mB#${ESC}[38;5;214m#@@@@@${ESC}[38;5;202m#}.${dfl}   
+                                ${ESC}[38;5;202m'!?${ESC}[38;5;214mn${ESC}[38;5;202mn?=.    .-_,${ong}=${ESC}[38;5;202m^x${ESC}[38;5;214mAQ#@@${ESC}[38;5;202mB>${dfl}  
+                                                     ${ESC}[38;5;202m>s${ESC}[38;5;214mQ@${ESC}[38;5;202m@?${dfl} 
+                                                       ${ESC}[38;5;202m_n${ESC}[38;5;214mB${ESC}[38;5;202m#,${dfl}
+                                                         ${ESC}[38;5;202m-hv${dfl}
+"
 prbl-logo(){
-  echo -e \
-"
-              _!*(xL}}xvr!,.                                
-          >}KM3nLL}}}}}LLTh%5u>.                            
-       <FEnviT3Egg8888888DGnivnOKr.                         
-    .vEP?vZ88888QBB####BQ88888ZxrjNT.                       
-   !MW^LD888Q#@@@@######@@@#B888gn>P8}.                     
-  ?g2!%888BBev*<!!!!!!!!!>***^!!!!!.LB&?                    
- >gF=Rg88#5                        ,^}#Be-                  
- Pg'a888#B     ,unnnnn}-          .ZO_N#Bgr                 
--gZ-g888B,                       .U88!j#B#Qs.               
-.NM-D88N!                       .j888=XQQQOQQ=              
- 28>u8g<    ,!!!!!!!!!!!!!!!!>LpQ888K,QQgy  ,V>             
- _OM:K?   .&#Q88888888888888#@@#888M:p##Q8G!  .             
-  ,WM!.!!^p#@@##Q88g8888QB#@@#Q888e!W#####BBg2!             
-   .u&n^yg888Q##@@@@@@@@@@#B8888K*}Q###BQQQBB##gL.          
-     _nDj?xPggg888QQQQQ888888Wx?zQ####BQB88&2vvnWQ(         
-       .^yOjLLL}jP%OEOM5suLxLjQ#######Q#@Q8Z.     r<        
-          .!}%QQNWKessaG%gB###########BQ@@@#R?.             
-              .!LP8B###Q5V%8B##B88QQB##BB#@@@@@Qe?,         
-                   _*TW#P_ !KQ#@BM^^}OB##BB#@@@@@@@Ba<      
-                        -<!. :jg##h:  _ryW8BBBB##@@@@@#}.   
-                                '!?nn?=.    .-_,=^xAQ#@@B>  
-                                                     >sQ@@? 
-                                                       _nB#,
-                                                         -hv
-"
+  echo "${PRBL_LOGO}"
 }
-# ensure ctrl-c to cancel script ends the entire process and not just the current function
-# trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
 # Function for spinner status
 # usage: spin "command [args]"
