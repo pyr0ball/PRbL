@@ -412,10 +412,10 @@ run-and-log(){
 logger(){
   if [ ! -z $logfile ] ; then
     if [ ! -f $logfile ] ; then
-      run mkdir -p ${rundir%/*}
+      #run mkdir -p ${rundir%/*}
       touch $logfile
     fi
-    $@ 2>&1 | tee >(
+    "$@" 2>&1 | tee >(
       while IFS= read -r line; do
         # strip any escaped strings for logging output 
         _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
@@ -513,7 +513,9 @@ install-dir() {
 success(){
   _line="$@"
   echo -e "\n"
-  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxtop
+  boxline "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxbottom
   exit 0
 }
 
