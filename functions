@@ -3,8 +3,6 @@
 
 # Initial Vars
 functionsrev=1.5.0
-functionsrev=1.4.0
-functionsrev=1.5.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -112,15 +110,46 @@ fi
   box_break_line=$9
 }
 
+# # Box Drawing characters
+# case $OSTYPE in 
+#     linux-gnu*|cygwin|msys) 
+#     light_h='\u2500'
+#     norm_h='\u2501'
+#     double_h='\u2550'
+#     light_v='\u2502'
+#     norm_v='\u2503'
+#     double_v='\u2551'
+#   ;;&
+#   darwin* )
+#     light_h='─'
+#     norm_h='━'
+#     double_h='═'
+#     light_v='│'
+#     norm_v='┃'
+#     double_v='║'
+#   ;;
+# esac
+
+#  # Box border type single-line
+# box-norm() {
+#   case $OSTYPE in 
+#     linux-gnu*|cygwin|msys)
+#       set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "\u250f" "\u2513" "\u2517" "\u251b" "\u25AB"
+#       set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "\u2554" "\u2557" "\u255A" "\u255D" "\u25AB"
+#       set_borders "\u2580" "\u2584" "\u258C" "\u2590" "\u259B" "\u259C" "\u2599" "\u259F" "\u25AB"
+#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u25AB" "\u25AB" "\u25AB" "\u25AB" "\u23AF"
+#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u256D" "\u256E" "\u2570" "\u256F" "\u25A2"
+
+
 # Box Drawing characters
 case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-    light_h='\u2500'
-    norm_h='\u2501'
-    double_h='\u2550'
-    light_v='\u2502'
-    norm_v='\u2503'
-    double_v='\u2551'
+    light_h='─'
+    norm_h='━'
+    double_h='═'
+    light_v='│'
+    norm_v='┃'
+    double_v='║'
   ;;&
   darwin* )
     light_h='─'
@@ -132,11 +161,23 @@ case $OSTYPE in
   ;;
 esac
 
+ set_borders() {
+  top_border=$1
+  bottom_border=$2
+  left_border=$3
+  right_border=$4
+  left_top_border=$5
+  right_top_border=$6
+  left_bottom_border=$7
+  right_bottom_border=$8
+  box_break_line=$9
+}
+
  # Box border type single-line
 box-norm() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "\u250f" "\u2513" "\u2517" "\u251b" "\u25AB"
+      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "┏" "┓" "┗" "┛" "▫"
     ;;&
     darwin* )
       set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "┏" "┓" "┗" "┛" "▫"
@@ -148,7 +189,7 @@ box-norm() {
 box-double() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "\u2554" "\u2557" "\u255A" "\u255D" "\u25AB"
+      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "╔" "╗" "╚" "╝" "▫"
     ;;&
     darwin* )
       set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "╔" "╗" "╚" "╝" "▫"
@@ -160,7 +201,7 @@ box-double() {
 box-heavy(){
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      set_borders "\u2580" "\u2584" "\u258C" "\u2590" "\u259B" "\u259C" "\u2599" "\u259F" "\u25AB"
+      set_borders "▀" "▄" "▌" "▐" "▛" "▜" "▙" "▟" "▫"
     ;;&
     darwin* )
       set_borders "▀" "▄" "▌" "▐" "▛" "▜" "▙" "▟" "▫"
@@ -172,7 +213,7 @@ box-heavy(){
 box-light(){
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u25AB" "\u25AB" "\u25AB" "\u25AB" "\u23AF"
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "▫" "▫" "▫" "▫" "⎯"
     ;;&
     darwin* )
       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "▫" "▫" "▫" "▫" "⎯"
@@ -183,11 +224,26 @@ box-light(){
  box-rounded(){
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u256D" "\u256E" "\u2570" "\u256F" "\u25A2"
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "╭" "╮" "╰" "╯" "▢"
     ;;&
     darwin* )
       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "╭" "╮" "╰" "╯" "▢"
     ;;
+  esac
+}
+
+ box-singlechar(){
+  set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
+}
+
+ set-boxtype(){
+  case $boxtype in 
+    norm)   box-norm ;;
+    double) box-double ;;
+    heavy)  box-heavy ;;
+    light)   box-light ;;
+    rounded) box-rounded ;;
+    char)   box-singlechar ;;
   esac
 }
 
@@ -208,43 +264,31 @@ box-light(){
 #set-boxtype
 
 repchar() {
-  n=1
-  while [ $n -le $2 ] ; do
-    echo -n "$1"
-    n=$((n+1))
-  done
+  local string=$(printf "%${2}s" "")
+  echo -n "${string// /$1}"
 }
 
-boxtop() {
-  echo -n "$left_top_border"
-  repchar "$top_border" $((BOXWIDTH-1))
-  echo -n "$right_top_border"
-  echo
+ boxtop() {
+  printf "%s%s%s\n" "$left_top_border" "$(repchar "$top_border" "$((BOXWIDTH-1))")" "$right_top_border"
 }
 
-boxbottom() {
-  echo -n "$left_bottom_border"
-  repchar "$bottom_border" $((BOXWIDTH-1))
-  echo -n "$right_bottom_border"
-  echo
+ boxbottom() {
+  printf "%s%s%s\n" "$left_bottom_border" "$(repchar "$bottom_border" "$((BOXWIDTH-1))")" "$right_bottom_border"
 }
 
-boxlinelog() {
-  local _cmd=${@:1}
-  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
-  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
+ boxlinelog() {
+  logger printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
 }
 
-boxline(){
-  echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
+ boxline(){
+  printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
 }
 
-boxseparator(){
-  repchar "$box_break_line" $((BOXWIDTH-3))
-  echo
+ boxseparator(){
+  printf "%s\n" "$(repchar "$box_break_line" "$((BOXWIDTH-3))")"
 }
 
-boxborder(){
+ boxborder(){
   boxtop
   for line in "$@" ; do
     boxline "$line"
@@ -252,27 +296,23 @@ boxborder(){
   boxbottom
 }
 
-boxborderlog(){
-  local _cmd=()
+ boxborderlog(){
   boxtop
   for line in "$@" ; do
-    _cmd+=("$line")
-  done
-  for line in ${_cmd[@]} ; do
     boxlinelog "$line"
   done
   boxbottom
 }
 
-subboxborder(){
-  BOXWIDTH_ORG=$BOXWIDTH
-  BOXWIDTH=$(($BOXWIDTH*75/100))
-  boxline $(boxtop)
+ subboxborder(){
+  local box_width_org="$BOXWIDTH"
+  BOXWIDTH=$(("$BOXWIDTH"*75/100))
+  boxline "$(boxtop)"
   for line in "$@" ; do
-    boxline $(boxline "$line")
+    boxline "$(boxline "$line")"
   done
-  boxline $(boxbottom)
-  BOXWIDTH=$BOXWIDTH_ORG
+  boxline "$(boxbottom)"
+  BOXWIDTH="$box_width_org"
 }
 
 # # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
