@@ -98,194 +98,101 @@ else
   BOXWIDTH=80
 fi
 
+ set_borders() {
+  top_border=$1
+  bottom_border=$2
+  left_border=$3
+  right_border=$4
+  left_top_border=$5
+  right_top_border=$6
+  left_bottom_border=$7
+  right_bottom_border=$8
+  box_break_line=$9
+}
+
 # Box Drawing characters
 case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-    light_h=$(echo -e "\u2500")
-    norm_h=$(echo -e "\u2501")
-    double_h=$(echo -e "\u2550")
-    light_v=$(echo -e "\u2502")
-    norm_v=$(echo -e "\u2503")
-    double_v=$(echo -e "\u2551")
+    light_h='\u2500'
+    norm_h='\u2501'
+    double_h='\u2550'
+    light_v='\u2502'
+    norm_v='\u2503'
+    double_v='\u2551'
   ;;&
   darwin* )
-    light_h=$(echo -e "─")
-    norm_h=$(echo -e "━")
-    double_h=$(echo -e "═")
-    light_v=$(echo -e "│")
-    norm_v=$(echo -e "┃")
-    double_v=$(echo -e "║")
+    light_h='─'
+    norm_h='━'
+    double_h='═'
+    light_v='│'
+    norm_v='┃'
+    double_v='║'
   ;;
 esac
 
-
-
-# Box border type single-line
-box-norm(){
-  # ---------------------------------------#
+ # Box border type single-line
+box-norm() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "\u250f")
-      right_top_border=$(echo -e "\u2513")
-      left_bottom_border=$(echo -e "\u2517")
-      right_bottom_border=$(echo -e "\u251b")
-      box_break_line=$(echo -e "\u25AB")
+      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "\u250f" "\u2513" "\u2517" "\u251b" "\u25AB"
     ;;&
     darwin* )
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "┏")
-      right_top_border=$(echo -e "┓")
-      left_bottom_border=$(echo -e "┗")
-      right_bottom_border=$(echo -e "┛")
-      box_break_line=$(echo -e "▫")
+      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "┏" "┓" "┗" "┛" "▫"
     ;;
   esac
-
-  # ---------------------------------------#
 }
 
-# Box border type double-line
-box-double(){
-  # ---------------------------------------#
+ # Box border type double-line
+box-double() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "\u2554")
-      right_top_border=$(echo -e "\u2557")
-      left_bottom_border=$(echo -e "\u255A")
-      right_bottom_border=$(echo -e "\u255D")
-      box_break_line=$(echo -e "\u25AB")
+      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "\u2554" "\u2557" "\u255A" "\u255D" "\u25AB"
     ;;&
     darwin* )
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "╔")
-      right_top_border=$(echo -e "╗")
-      left_bottom_border=$(echo -e "╚")
-      right_bottom_border=$(echo -e "╝")
-      box_break_line=$(echo -e "▫")
+      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "╔" "╗" "╚" "╝" "▫"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-# Box border type thick-line
+ # Box border type thick-line
 box-heavy(){
-  # ---------------------------------------#
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      top_border=$(echo -e "\u2580")
-      bottom_border=$(echo -e "\u2584")
-      left_border=$(echo -e "\u258C")
-      right_border=$(echo -e "\u2590")
-      left_top_border=$(echo -e "\u259B")
-      right_top_border=$(echo -e "\u259C")
-      left_bottom_border=$(echo -e "\u2599")
-      right_bottom_border=$(echo -e "\u259F")
-      box_break_line=$(echo -e "\u25AC")
+      set_borders "\u2580" "\u2584" "\u258C" "\u2590" "\u259B" "\u259C" "\u2599" "\u259F" "\u25AB"
     ;;&
     darwin* )
-      top_border=$(echo -e "▀")
-      bottom_border=$(echo -e "▄")
-      left_border=$(echo -e "▌")
-      right_border=$(echo -e "▐")
-      left_top_border=$(echo -e "▛")
-      right_top_border=$(echo -e "▜")
-      left_bottom_border=$(echo -e "▙")
-      right_bottom_border=$(echo -e "▟")
-      box_break_line=$(echo -e "▫")
+      set_borders "▀" "▄" "▌" "▐" "▛" "▜" "▙" "▟" "▫"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-# Box border type thin-line
+ # Box border type thin-line
 box-light(){
-  # ---------------------------------------#
-  #top_border=$(echo -e '\u23BA')
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u25AB")
-      right_top_border=$(echo -e "\u25AB")
-      left_bottom_border=$(echo -e "\u25AB")
-      right_bottom_border=$(echo -e "\u25AB")
-      box_break_line=$(echo -e "\u23AF")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u25AB" "\u25AB" "\u25AB" "\u25AB" "\u23AF"
     ;;&
     darwin* )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "▫")
-      right_top_border=$(echo -e "▫")
-      left_bottom_border=$(echo -e "▫")
-      right_bottom_border=$(echo -e "▫")
-      box_break_line=$(echo -e "⎯")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "▫" "▫" "▫" "▫" "⎯"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-box-rounded(){
-  # ---------------------------------------#
+ box-rounded(){
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u256D")
-      right_top_border=$(echo -e "\u256E")
-      left_bottom_border=$(echo -e "\u2570")
-      right_bottom_border=$(echo -e "\u256F")
-      box_break_line=$(echo -e "\u25A2")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u256D" "\u256E" "\u2570" "\u256F" "\u25A2"
     ;;&
     darwin* )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "╭")
-      right_top_border=$(echo -e "╮")
-      left_bottom_border=$(echo -e "╰")
-      right_bottom_border=$(echo -e "╯")
-      box_break_line=$(echo -e "▢")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "╭" "╮" "╰" "╯" "▢"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-box-singlechar(){
-  # ---------------------------------------#
-  top_border=$borderchar
-  bottom_border=$borderchar
-  left_border=$borderchar
-  right_border=$borderchar
-  left_top_border=$borderchar
-  right_top_border=$borderchar
-  left_bottom_border=$borderchar
-  right_bottom_border=$borderchar
-  box_break_line="-"
-  # ---------------------------------------#
+ box-singlechar(){
+  set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
 }
-
-set-boxtype(){
+ set-boxtype(){
   case $boxtype in 
     norm)   box-norm ;;
     double) box-double ;;
@@ -1083,52 +990,44 @@ compare-versions(){
     fi
 }
 
-identify-system(){
-    # OS distribution auto-detection
+identify_system() {
   if type lsb_release >/dev/null 2>&1; then
-      # linuxbase.org
-      ID=$(lsb_release -si)
-      OS=$(lsb_release -si)
-      VER=$(lsb_release -sr)
-  elif [ -f /etc/debian_version ]; then
-      # Older Debian/Ubuntu/etc.
-      ID=debian
-      OS=Debian
-      VER=$(cat /etc/debian_version)
-  elif [ -f /etc/lsb-release ]; then
-      # For Arch and some versions of Debian/Ubuntu without lsb_release command
-      . /etc/lsb-release
-      ID=$DISTRIB_ID
-      OS=$DISTRIB_ID
-      VER=$DISTRIB_RELEASE
-      VER=${VER:-$LSB_VERSION}
+    ID=$(lsb_release -si)
+    OS=$(lsb_release -si)
+    VER=$(lsb_release -sr)
   elif [ -f /etc/os-release ]; then
-      # freedesktop.org arch and systemd
-      . /etc/os-release
-      ID=${ID:-VERSION_ID}
-      ID=${ID:-VERSION}
-      OS=$NAME
-      VER=$VERSION_ID
-      VER=${VER:-$VERSION}
+    . /etc/os-release
+    ID=${ID:-$VERSION_ID}
+    ID=${ID:-$VERSION}
+    OS=$NAME
+    VER=$VERSION_ID
+    VER=${VER:-$VERSION}
+  elif [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    ID=$DISTRIB_ID
+    OS=$DISTRIB_ID
+    VER=$DISTRIB_RELEASE
+    VER=${VER:-$LSB_VERSION}
+  elif [ -f /etc/debian_version ]; then
+    ID=debian
+    OS=Debian
+    VER=$(cat /etc/debian_version)
   elif [ -f /etc/redhat-release ]; then
-      # Older Red Hat, CentOS, etc.
-      OS=$(cat /etc/redhat-release | awk '{print $1}')
+    OS=$(awk '{print $1}' /etc/redhat-release)
   else
-      # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-      OS=$(uname -s)
-      VER=$(uname -r)
+    OS=$(uname -s)
+    VER=$(uname -r)
   fi
 }
 
-ID(){
+ ID() {
   boxborder \
-  "ID: $ID" \
-  "OS: $OS" \
-  "VER: $VER"
+    "ID: $ID" \
+    "OS: $OS" \
+    "VER: $VER"
 }
 
-install_packages(){
-  # Separate package names and file arguments
+ install_packages() {
   declare -a packages=()
   declare -a offline_packages=()
   for arg in "$@"; do
@@ -1138,66 +1037,50 @@ install_packages(){
       packages+=("$arg")
     fi
   done
-  # Identify which distro is being run
-  identify-system
-
-  # Match distribution with available utilities
-  # TODO: Add package name transformer lists
-  case $ID in
+  identify_system
+   case $ID in
     amzn | centos | fedora | rhel)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        sudo yum install -y "${packages[@]}"
-      fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${packages[@]}"
-      fi
+      [ "${#packages[@]}" -gt 0 ] && run sudo yum install -y "${packages[@]}"
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -i "${packages[@]}"
       ;;
     arch | Arch | manjaro)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo pacman -Syu
-        sudo pacman -S "${packages[@]}"
+        run sudo pacman -Syu
+        run sudo pacman -S "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo pacman -U "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo pacman -U "${offline_packages[@]}"
       ;;
     debian | ubuntu | Ubuntu)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo apt-get update
-        sudo apt-get install "${packages[@]}"
+        run sudo apt-get update
+        run sudo apt-get install "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo dpkg -i "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo dpkg -i "${offline_packages[@]}"
       ;;
     opensuse | sles)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo zypper refresh
-        sudo zypper install "${packages[@]}"
+        run sudo zypper refresh
+        run sudo zypper install "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -i "${offline_packages[@]}"
       ;;
     slackware)
       if [ "${#packages[@]}" -gt 0 ]; then
         for package in "${packages[@]}"; do
-          sudo installpkg "$package"
+          run sudo installpkg "$package"
         done
       fi
       if [ "${#offline_packages[@]}" -gt 0 ]; then
         for package_file in "${offline_packages[@]}"; do
-          sudo installpkg "$package_file"
+          run sudo installpkg "$package_file"
         done
       fi
       ;;
     brew)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        brew install "${packages[@]}"
-      fi
+      [ "${#packages[@]}" -gt 0 ] && run brew install "${packages[@]}"
       if [ "${#offline_packages[@]}" -gt 0 ]; then
         for package_file in "${offline_packages[@]}"; do
-          brew install "$package_file"
+          run brew install "$package_file"
         done
       fi
       ;;
