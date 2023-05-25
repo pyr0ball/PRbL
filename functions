@@ -1083,7 +1083,7 @@ compare-versions(){
     fi
 }
 
-find-pmgr(){
+identify-system(){
     # OS distribution auto-detection
   if type lsb_release >/dev/null 2>&1; then
       # linuxbase.org
@@ -1118,40 +1118,19 @@ find-pmgr(){
       OS=$(uname -s)
       VER=$(uname -r)
   fi
+}
 
-  # Match distribution with available utilities
-  case $ID in
-    amzn | centos | fedora | rhel)
-      online_pmgr="yum"
-      offline_pmgr="rpm"
-      ;;
-    arch | Arch | manjaro)
-      online_pmgr="pacman"
-      offline_pmgr="pacman"
-      ;;
-    debian | ubuntu | Ubuntu)
-      online_pmgr="apt-get"
-      offline_pmgr="dpkg"
-      ;;
-    opensuse)
-      online_pmgr="zypper"
-      offline_pmgr="zypper"
-      ;;
-    slackware)
-      online_pmgr="slackpkg"
-      offline_pmgr="installpkg"
-      ;;
-    sles)
-      online_pmgr="zypper"
-      offline_pmgr="rpm"
-      ;;
-  esac
+ID(){
+  boxborder \
+  "ID: $ID" \
+  "OS: $OS" \
+  "VER: $VER"
+}
 
 install_packages(){
+  # Separate package names and file arguments
   declare -a packages=()
   declare -a offline_packages=()
-
-  # Separate package names and file arguments
   for arg in "$@"; do
     if [[ -f $arg ]]; then
       offline_packages+=("$arg")
@@ -1159,85 +1138,21 @@ install_packages(){
       packages+=("$arg")
     fi
   done
+  # Identify which distro is being run
+  identify-system
 
-  local distro=""
-  local package_manager=""
-
-  # Detect distribution
-  if [ -f /etc/os-release ]; then
-    distro=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-  elif [ -f /etc/lsb-release ]; then
-    distro=$(awk -F= '/^DISTRIB_ID=/{print $2}' /etc/lsb-release)
-  elif [ -f /etc/debian_version ]; then
-    distro="debian"
-  elif [ -f /etc/redhat-release ]; then
-    distro="rhel"
-  elif [ -f /etc/SuSE-release ]; then
-    distro="opensuse"
-  elif [ -f /etc/slackware-version ]; then
-    distro="slackware"
-  elif [ "$(uname)" == "Darwin" ]; then
-    distro="macos"
-  else
-    echo "Unsupported distribution. Unable to determine the package manager."
-    return 1
-  fi
-
-  # Detect package manager
-  case "$distro" in
-    "debian"|"ubuntu")
-      package_manager="apt-get"
-      ;;
-    "fedora"|"centos"|"rhel")
-      package_manager="yum"
-      ;;
-    "opensuse")
-      package_manager="zypper"
-      ;;
-    "arch")
-      package_manager="pacman"
-      ;;
-    "slackware")
-      package_manager="pkgtool"
-      ;;
-    "macos")
-      package_manager="brew"
-      ;;
-    *)
-      echo "Unsupported distribution. Unable to determine the package manager."
-      return 1
-      ;;
-  esac
-
-  # Install packages using package manager
-  case "$package_manager" in
-    "apt-get")
+  # Match distribution with available utilities
+  # TODO: Add package name transformer lists
+  case $ID in
+    amzn | centos | fedora | rhel)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo apt-get update
-        sudo apt-get install "${packages[@]}"
+        sudo yum install -y "${packages[@]}"
       fi
       if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo dpkg -i "${offline_packages[@]}"
+        sudo rpm -i "${packages[@]}"
       fi
       ;;
-    "yum")
-      if [ "${#packages[@]}" -gt 0 ]; then
-        sudo yum install "${packages[@]}"
-      fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${offline_packages[@]}"
-      fi
-      ;;
-    "zypper")
-      if [ "${#packages[@]}" -gt 0 ]; then
-        sudo zypper refresh
-        sudo zypper install "${packages[@]}"
-      fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${offline_packages[@]}"
-      fi
-      ;;
-    "pacman")
+    arch | Arch | manjaro)
       if [ "${#packages[@]}" -gt 0 ]; then
         sudo pacman -Syu
         sudo pacman -S "${packages[@]}"
@@ -1246,15 +1161,37 @@ install_packages(){
         sudo pacman -U "${offline_packages[@]}"
       fi
       ;;
-    "pkgtool")
-      for package in "${packages[@]}"; do
-        sudo installpkg "$package"
-      done
-      for package_file in "${offline_packages[@]}"; do
-        sudo installpkg "$package_file"
-      done
+    debian | ubuntu | Ubuntu)
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo apt-get update
+        sudo apt-get install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo dpkg -i "${offline_packages[@]}"
+      fi
       ;;
-    "brew")
+    opensuse | sles)
+      if [ "${#packages[@]}" -gt 0 ]; then
+        sudo zypper refresh
+        sudo zypper install "${packages[@]}"
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        sudo rpm -i "${offline_packages[@]}"
+      fi
+      ;;
+    slackware)
+      if [ "${#packages[@]}" -gt 0 ]; then
+        for package in "${packages[@]}"; do
+          sudo installpkg "$package"
+        done
+      fi
+      if [ "${#offline_packages[@]}" -gt 0 ]; then
+        for package_file in "${offline_packages[@]}"; do
+          sudo installpkg "$package_file"
+        done
+      fi
+      ;;
+    brew)
       if [ "${#packages[@]}" -gt 0 ]; then
         brew install "${packages[@]}"
       fi
@@ -1263,10 +1200,6 @@ install_packages(){
           brew install "$package_file"
         done
       fi
-      ;;
-    *)
-      echo "Unsupported package manager."
-      return 1
       ;;
   esac
 }
