@@ -326,10 +326,12 @@ repchar() {
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
 center(){
-  #local padding="";
-  padding="$(printf '%0.1s'  \ {1..100})"
-  #padding=" "
-  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
+  local padding=""
+  padding="$(printf ' %.0s' {1..100})"
+  local string_length=${#1}
+  local padding_length=$(( (BOXWIDTH - 2 - string_length) / 2 ))
+  printf "%s%s %s %s%s\n" "$left_border" "${padding:0:padding_length}" "$1" "${padding:0:padding_length}" "$right_border"
+  #printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
   #printf "%s %s %s %s %s\n" "$left_border" "$padding" "$1" "$padding" "$right_border";
   #echo -en "\r${ESC}[$(((BOXWIDTH-${#1})/2))C$@\r${ESC}[${BOXWIDTH}C\n"
 }
@@ -475,7 +477,9 @@ install-dir() {
 success(){
   _line="$@"
   echo -e "\n"
-  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxtop
+  boxline "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxbottom
   exit 0
 }
 
@@ -530,7 +534,7 @@ trim() {
 
 strip-html-tags() {
   local input="$1"
-  local stripped=$(echo "$input" | sed 's/<[^>]*>//g')
+  local stripped=$(echo "$input" | sed 's/<[^>]*>//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   echo "$stripped"
 }
 
