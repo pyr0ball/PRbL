@@ -2,13 +2,16 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.4.0
+functionsrev=1.6.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
 #runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
+
+# ensure ctrl-c to cancel script ends the entire process and not just the current function
+# trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
 # return any cursor mods to normal on exit
 cleanup(){
@@ -98,194 +101,159 @@ else
   BOXWIDTH=80
 fi
 
+ set_borders() {
+  top_border=$1
+  bottom_border=$2
+  left_border=$3
+  right_border=$4
+  left_top_border=$5
+  right_top_border=$6
+  left_bottom_border=$7
+  right_bottom_border=$8
+  box_break_line=$9
+}
+
+# # Box Drawing characters
+# case $OSTYPE in 
+#     linux-gnu*|cygwin|msys) 
+#     light_h='\u2500'
+#     norm_h='\u2501'
+#     double_h='\u2550'
+#     light_v='\u2502'
+#     norm_v='\u2503'
+#     double_v='\u2551'
+#   ;;&
+#   darwin* )
+#     light_h='─'
+#     norm_h='━'
+#     double_h='═'
+#     light_v='│'
+#     norm_v='┃'
+#     double_v='║'
+#   ;;
+# esac
+
+#  # Box border type single-line
+# box-norm() {
+#   case $OSTYPE in 
+#     linux-gnu*|cygwin|msys)
+#       set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "\u250f" "\u2513" "\u2517" "\u251b" "\u25AB"
+#       set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "\u2554" "\u2557" "\u255A" "\u255D" "\u25AB"
+#       set_borders "\u2580" "\u2584" "\u258C" "\u2590" "\u259B" "\u259C" "\u2599" "\u259F" "\u25AB"
+#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u25AB" "\u25AB" "\u25AB" "\u25AB" "\u23AF"
+#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u256D" "\u256E" "\u2570" "\u256F" "\u25A2"
+
+
 # Box Drawing characters
 case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-    light_h=$(echo -e "\u2500")
-    norm_h=$(echo -e "\u2501")
-    double_h=$(echo -e "\u2550")
-    light_v=$(echo -e "\u2502")
-    norm_v=$(echo -e "\u2503")
-    double_v=$(echo -e "\u2551")
+    light_h='─'
+    norm_h='━'
+    double_h='═'
+    light_v='│'
+    norm_v='┃'
+    double_v='║'
   ;;&
   darwin* )
-    light_h=$(echo -e "─")
-    norm_h=$(echo -e "━")
-    double_h=$(echo -e "═")
-    light_v=$(echo -e "│")
-    norm_v=$(echo -e "┃")
-    double_v=$(echo -e "║")
+    light_h='─'
+    norm_h='━'
+    double_h='═'
+    light_v='│'
+    norm_v='┃'
+    double_v='║'
   ;;
 esac
 
+ set_borders() {
+  top_border=$1
+  bottom_border=$2
+  left_border=$3
+  right_border=$4
+  left_top_border=$5
+  right_top_border=$6
+  left_bottom_border=$7
+  right_bottom_border=$8
+  box_break_line=$9
+}
 
-
-# Box border type single-line
-box-norm(){
-  # ---------------------------------------#
+ # Box border type single-line
+box-norm() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "\u250f")
-      right_top_border=$(echo -e "\u2513")
-      left_bottom_border=$(echo -e "\u2517")
-      right_bottom_border=$(echo -e "\u251b")
-      box_break_line=$(echo -e "\u25AB")
+      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "┏" "┓" "┗" "┛" "▫"
     ;;&
     darwin* )
-      top_border=${norm_h}
-      bottom_border=${norm_h}
-      left_border=${norm_v}
-      right_border=${norm_v}
-      left_top_border=$(echo -e "┏")
-      right_top_border=$(echo -e "┓")
-      left_bottom_border=$(echo -e "┗")
-      right_bottom_border=$(echo -e "┛")
-      box_break_line=$(echo -e "▫")
+      set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "┏" "┓" "┗" "┛" "▫"
     ;;
   esac
-
-  # ---------------------------------------#
 }
 
-# Box border type double-line
-box-double(){
-  # ---------------------------------------#
+ # Box border type double-line
+box-double() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "\u2554")
-      right_top_border=$(echo -e "\u2557")
-      left_bottom_border=$(echo -e "\u255A")
-      right_bottom_border=$(echo -e "\u255D")
-      box_break_line=$(echo -e "\u25AB")
+      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "╔" "╗" "╚" "╝" "▫"
     ;;&
     darwin* )
-      top_border=${double_h}
-      bottom_border=${double_h}
-      left_border=${double_v}
-      right_border=${double_v}
-      left_top_border=$(echo -e "╔")
-      right_top_border=$(echo -e "╗")
-      left_bottom_border=$(echo -e "╚")
-      right_bottom_border=$(echo -e "╝")
-      box_break_line=$(echo -e "▫")
+      set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "╔" "╗" "╚" "╝" "▫"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-# Box border type thick-line
+ # Box border type thick-line
 box-heavy(){
-  # ---------------------------------------#
   case $OSTYPE in 
     linux-gnu*|cygwin|msys) 
-      top_border=$(echo -e "\u2580")
-      bottom_border=$(echo -e "\u2584")
-      left_border=$(echo -e "\u258C")
-      right_border=$(echo -e "\u2590")
-      left_top_border=$(echo -e "\u259B")
-      right_top_border=$(echo -e "\u259C")
-      left_bottom_border=$(echo -e "\u2599")
-      right_bottom_border=$(echo -e "\u259F")
-      box_break_line=$(echo -e "\u25AC")
+      set_borders "▀" "▄" "▌" "▐" "▛" "▜" "▙" "▟" "▫"
     ;;&
     darwin* )
-      top_border=$(echo -e "▀")
-      bottom_border=$(echo -e "▄")
-      left_border=$(echo -e "▌")
-      right_border=$(echo -e "▐")
-      left_top_border=$(echo -e "▛")
-      right_top_border=$(echo -e "▜")
-      left_bottom_border=$(echo -e "▙")
-      right_bottom_border=$(echo -e "▟")
-      box_break_line=$(echo -e "▫")
+      set_borders "▀" "▄" "▌" "▐" "▛" "▜" "▙" "▟" "▫"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-# Box border type thin-line
+ # Box border type thin-line
 box-light(){
-  # ---------------------------------------#
-  #top_border=$(echo -e '\u23BA')
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u25AB")
-      right_top_border=$(echo -e "\u25AB")
-      left_bottom_border=$(echo -e "\u25AB")
-      right_bottom_border=$(echo -e "\u25AB")
-      box_break_line=$(echo -e "\u23AF")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "▫" "▫" "▫" "▫" "⎯"
     ;;&
     darwin* )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "▫")
-      right_top_border=$(echo -e "▫")
-      left_bottom_border=$(echo -e "▫")
-      right_bottom_border=$(echo -e "▫")
-      box_break_line=$(echo -e "⎯")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "▫" "▫" "▫" "▫" "⎯"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-box-rounded(){
-  # ---------------------------------------#
+ box-rounded(){
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "\u256D")
-      right_top_border=$(echo -e "\u256E")
-      left_bottom_border=$(echo -e "\u2570")
-      right_bottom_border=$(echo -e "\u256F")
-      box_break_line=$(echo -e "\u25A2")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "╭" "╮" "╰" "╯" "▢"
     ;;&
     darwin* )
-      top_border=${light_h}
-      bottom_border=${light_h}
-      left_border=${light_v}
-      right_border=${light_v}
-      left_top_border=$(echo -e "╭")
-      right_top_border=$(echo -e "╮")
-      left_bottom_border=$(echo -e "╰")
-      right_bottom_border=$(echo -e "╯")
-      box_break_line=$(echo -e "▢")
+      set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "╭" "╮" "╰" "╯" "▢"
     ;;
   esac
-  # ---------------------------------------#
 }
 
-box-singlechar(){
-  # ---------------------------------------#
-  top_border=$borderchar
-  bottom_border=$borderchar
-  left_border=$borderchar
-  right_border=$borderchar
-  left_top_border=$borderchar
-  right_top_border=$borderchar
-  left_bottom_border=$borderchar
-  right_bottom_border=$borderchar
-  box_break_line="-"
-  # ---------------------------------------#
+ box-singlechar(){
+  set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
 }
 
-set-boxtype(){
+ set-boxtype(){
+  case $boxtype in 
+    norm)   box-norm ;;
+    double) box-double ;;
+    heavy)  box-heavy ;;
+    light)   box-light ;;
+    rounded) box-rounded ;;
+    char)   box-singlechar ;;
+  esac
+}
+
+ box-singlechar(){
+  set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
+}
+ set-boxtype(){
   case $boxtype in 
     norm)   box-norm ;;
     double) box-double ;;
@@ -310,35 +278,27 @@ repchar() {
   done
 }
 
-boxtop() {
-  echo -n "$left_top_border"
-  repchar "$top_border" $((BOXWIDTH-1))
-  echo -n "$right_top_border"
-  echo
+ boxtop() {
+  printf "%s%s%s\n" "$left_top_border" "$(repchar "$top_border" "$((BOXWIDTH-1))")" "$right_top_border"
 }
 
-boxbottom() {
-  echo -n "$left_bottom_border"
-  repchar "$bottom_border" $((BOXWIDTH-1))
-  echo -n "$right_bottom_border"
-  echo
+ boxbottom() {
+  printf "%s%s%s\n" "$left_bottom_border" "$(repchar "$bottom_border" "$((BOXWIDTH-1))")" "$right_bottom_border"
 }
 
-boxlinelog() {
-  local _cmd=${@:1}
-  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
-  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
+ boxlinelog() {
+  logger printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
 }
 
-boxline(){
-  echo -e "$left_border $1\r${ESC}[${BOXWIDTH}C$right_border"
+ boxline(){
+  printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
 }
 
 boxseparator(){
   printf '%s\n' "$(repchar "$box_break_line" $((BOXWIDTH-3)))"
 }
 
-boxborder(){
+ boxborder(){
   boxtop
   for line in "$@" ; do
     boxline "$line"
@@ -356,9 +316,6 @@ boxborderlog(){
   local _cmd=()
   boxtop
   for line in "$@" ; do
-    _cmd+=("$line")
-  done
-  for line in ${_cmd[@]} ; do
     boxlinelog "$line"
   done
   boxbottom
@@ -462,26 +419,18 @@ run-and-log(){
     fi
 }
 
-logger(){
-  if [ ! -z $logfile ] ; then
-    if [ ! -f $logfile ] ; then
-      #run mkdir -p ${rundir%/*}
-      touch $logfile
-    fi
-    "$@" 2>&1 | tee >(
-      while IFS= read -r line; do
-        # strip any escaped strings for logging output 
-        _line=$(echo $line | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | tr -dc '[:print:]')
-        # only print out non-empty lines to log
-        if [[ "$_line" != "" ]] ; then
-          printf '[%s] %s\n' "${scriptname}][${pretty_date}" "$_line"
-        fi
-      done >> $logfile
-    )
-  else
-    $@
-  fi
-}
+logger(){ 
+  if [[ -w "$logfile" ]]; then 
+    "$@" 2>&1 | tee -a "$logfile" | while IFS= read -r line; do 
+      # strip any escaped strings for logging output  
+      _line="${line//[$'\t\r\x01-\x1F\x7F-\xFF']}"  
+      # only print out non-empty lines to log  
+      [[ -n $_line ]] && printf '[%s][%s] %s\n' "$scriptname" "$pretty_date" "$_line" >> "$logfile"  
+    done 
+  else 
+    "$@" 
+  fi 
+} 
 
 # File handling functions
 
@@ -661,38 +610,35 @@ ctrl_c(){
 }
 
 # Cosmetics
-
+PRBL_LOGO="
+              ${ESC}[38;5;202m_!*(xL}}xvr!,.${dfl}                                
+          ${ESC}[38;5;202m>}KM3${ong}nLL}}}}}LLTh${ESC}[38;5;202m%5u>.${dfl}                            
+       ${ESC}[38;5;202m<FE${ong}nvi${ESC}[38;5;202mT3Egg8888888DGn${ong}ivn${ESC}[38;5;202mOKr.${dfl}                         
+    ${ESC}[38;5;202m.vEP${ong}?v${ESC}[38;5;202mZ88888${ong}Q${ESC}[38;5;178mB${ylw}B####B${ESC}[38;5;178mQ${ESC}[38;5;202m88888Zx${ong}rj${ESC}[38;5;202mNT.${dfl}                       
+   ${ESC}[38;5;202m!MW${ong}^L${ESC}[38;5;202mD888${ESC}[38;5;178mQ${ylw}#@@${ESC}[38;5;178m@${ong}@${ESC}[38;5;202m######${ESC}[38;5;178m@${ylw}@@#B${ESC}[38;5;202m888g${ong}n>P${ESC}[38;5;202m8}.${dfl}                     
+  ${ESC}[38;5;202m?g${ong}2!${ESC}[38;5;202m%888${ESC}[38;5;178mB${ylw}B${ESC}[38;5;178mev*${ong}<!!!!!!!!!>${ESC}[38;5;178m***^${ong}!!!!!.L${ESC}[38;5;202mB&?${dfl}                    
+ ${ESC}[38;5;202m>gF${ong}=${ESC}[38;5;202mRg8${ong}8${ylw}#5${dfl}                        ${ESC}[38;5;202m,${ong}^}${ESC}[38;5;202m#Be-${dfl}                  
+ ${ESC}[38;5;202mPg${ong}'${ESC}[38;5;202ma88${ong}8${ylw}#B     ${ESC}[38;5;202m,unnnnn}-          .ZO${ong}_${ESC}[38;5;202mN${ESC}[38;5;208m#B${ESC}[38;5;202mgr${dfl}                 
+${ESC}[38;5;202m-gZ${ong}-${ESC}[38;5;202mg88${ong}8${ylw}B,                       ${ESC}[38;5;202m.U88${ong}!${ESC}[38;5;202mj${ESC}[38;5;208m#B#${ESC}[38;5;202m${ESC}[38;5;202mQs.${dfl}               
+${ESC}[38;5;202m.NM${ong}-${ESC}[38;5;202mD88${ong}N${ylw}!                       .${ESC}[38;5;202mj888${ong}=${ESC}[38;5;202mX${ESC}[38;5;208mQQ${ESC}[38;5;202mQ${ong}O${ESC}[38;5;202mQQ=${dfl}              
+ ${ESC}[38;5;202m28${ong}>u${ESC}[38;5;202m8g<    ${ESC}[38;5;178m,${ong}!!!!!!!!!!!!!!!!${ESC}[38;5;178m>Lp${ESC}[38;5;202mQ888K${ong},${ESC}[38;5;202mQQ${ESC}[38;5;208mg${ESC}[38;5;202my  ,V>${dfl}             
+ ${ESC}[38;5;202m_OM${ong}:K${ESC}[38;5;202m?   ${ylw}.&#${ong}Q${ESC}[38;5;202m88888888888888${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#${ESC}[38;5;202m888M${ong}:p${ESC}[38;5;202m#${ESC}[38;5;208m#Q${ESC}[38;5;202m8G!  .${dfl}             
+  ${ESC}[38;5;202m,WM${ong}!.!!${ESC}[38;5;202m^p${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#${ong}#${ESC}[38;5;202mQ88g8888Q${ong}B${ESC}[38;5;178m#${ylw}@@${ESC}[38;5;178m#Q${ESC}[38;5;202m888e${ong}!W${ESC}[38;5;202m#${ESC}[38;5;208m####${ESC}[38;5;202mBBg2!${dfl}             
+   ${ESC}[38;5;202m.u&n${ong}^y${ESC}[38;5;202mg88${ong}8${ESC}[38;5;178mQ${ylw}##@${ESC}[38;5;178m@${ong}@${ESC}[38;5;202m@@@${ong}@${ESC}[38;5;178m@@${ylw}@#${ESC}[38;5;178mB8${ong}8${ESC}[38;5;202m88K${ong}*}${ESC}[38;5;202mQ${ESC}[38;5;208m###${ESC}[38;5;202mBQ${ong}Q${ESC}[38;5;202mQ${ESC}[38;5;208mBB${ESC}[38;5;202m##gL.${dfl}          
+     ${ESC}[38;5;202m_nD${ong}j?${ESC}[38;5;202mxmPggg${ESC}[38;5;178m8${ylw}88Q${ESC}[38;5;178mQQQ${ylw}Q8${ESC}[38;5;178m88${ong}88${ESC}[38;5;202m8Wx${ong}?z${ESC}[38;5;202mQ${ESC}[38;5;208m#######${ESC}[38;5;202mQ${ESC}[38;5;208m#${ong}@${ESC}[38;5;202mQ8Z.     r<${dfl}        
+       ${ESC}[38;5;202m.^y${ong}Oj${ESC}[38;5;202mLLL${ESC}[38;5;208m}${ESC}[38;5;202mjP${ong}%OEOM${ESC}[38;5;202m5suLxL${ong}jQ${ESC}[38;5;202m#${ESC}[38;5;208m######${ESC}[38;5;214mQ${ESC}[38;5;208m###${ESC}[38;5;202mB88&2${ong}vvn${ESC}[38;5;202mWQ(${dfl}         
+          ${ESC}[38;5;202m.!}${ong}%QQNWKessaG%gB${ESC}[38;5;202m###${ESC}[38;5;208m########${ESC}[38;5;202mB${ESC}[38;5;214mQ@@@${ESC}[38;5;208m#${ESC}[38;5;202mR?.${dfl}             
+              ${ESC}[38;5;202m.!LP${ESC}[38;5;208m8B${ESC}[38;5;214m##${ESC}[38;5;202m#Q${ong}5${ESC}[38;5;202mV%8${ESC}[38;5;208mB##B88${ong}QQ${ESC}[38;5;202mB${ESC}[38;5;208m##B${ESC}[38;5;202mB${ESC}[38;5;214m#@@@@@${ong}Q${ESC}[38;5;202me?,${dfl}         
+                   ${ESC}[38;5;202m_*${ESC}[38;5;208mTW${ESC}[38;5;214m#${ESC}[38;5;202mP_ !K${ESC}[38;5;208mQ${ESC}[38;5;214m#${ESC}[38;5;202m@${ong}BM^^}${ESC}[38;5;202mOB${ESC}[38;5;208m##BB#${ESC}[38;5;202m#${ESC}[38;5;214m@@@#B${ESC}[38;5;202ma<${dfl}      
+                        ${ESC}[38;5;202m-${ESC}[38;5;208m<${ESC}[38;5;202m!. :j${ESC}[38;5;208mg${ESC}[38;5;214m##${ESC}[38;5;202mh:  _ry${ESC}[38;5;208mW8BBB${ESC}[38;5;202mB#${ESC}[38;5;214m#@@@@@${ESC}[38;5;202m#}.${dfl}   
+                                ${ESC}[38;5;202m'!?${ESC}[38;5;214mn${ESC}[38;5;202mn?=.    .-_,${ong}=${ESC}[38;5;202m^x${ESC}[38;5;214mAQ#@@${ESC}[38;5;202mB>${dfl}  
+                                                     ${ESC}[38;5;202m>s${ESC}[38;5;214mQ@${ESC}[38;5;202m@?${dfl} 
+                                                       ${ESC}[38;5;202m_n${ESC}[38;5;214mB${ESC}[38;5;202m#,${dfl}
+                                                         ${ESC}[38;5;202m-hv${dfl}
+"
 prbl-logo(){
-  echo -e \
-"
-              _!*(xL}}xvr!,.                                
-          >}KM3nLL}}}}}LLTh%5u>.                            
-       <FEnviT3Egg8888888DGnivnOKr.                         
-    .vEP?vZ88888QBB####BQ88888ZxrjNT.                       
-   !MW^LD888Q#@@@@######@@@#B888gn>P8}.                     
-  ?g2!%888BBev*<!!!!!!!!!>***^!!!!!.LB&?                    
- >gF=Rg88#5                        ,^}#Be-                  
- Pg'a888#B     ,unnnnn}-          .ZO_N#Bgr                 
--gZ-g888B,                       .U88!j#B#Qs.               
-.NM-D88N!                       .j888=XQQQOQQ=              
- 28>u8g<    ,!!!!!!!!!!!!!!!!>LpQ888K,QQgy  ,V>             
- _OM:K?   .&#Q88888888888888#@@#888M:p##Q8G!  .             
-  ,WM!.!!^p#@@##Q88g8888QB#@@#Q888e!W#####BBg2!             
-   .u&n^yg888Q##@@@@@@@@@@#B8888K*}Q###BQQQBB##gL.          
-     _nDj?xPggg888QQQQQ888888Wx?zQ####BQB88&2vvnWQ(         
-       .^yOjLLL}jP%OEOM5suLxLjQ#######Q#@Q8Z.     r<        
-          .!}%QQNWKessaG%gB###########BQ@@@#R?.             
-              .!LP8B###Q5V%8B##B88QQB##BB#@@@@@Qe?,         
-                   _*TW#P_ !KQ#@BM^^}OB##BB#@@@@@@@Ba<      
-                        -<!. :jg##h:  _ryW8BBBB##@@@@@#}.   
-                                '!?nn?=.    .-_,=^xAQ#@@B>  
-                                                     >sQ@@? 
-                                                       _nB#,
-                                                         -hv
-"
+  echo "${PRBL_LOGO}"
 }
-# ensure ctrl-c to cancel script ends the entire process and not just the current function
-# trap ctrl_c INT # Commented out by default to prevent abnormal background exits
 
 # Function for spinner status
 # usage: spin "command [args]"
@@ -1120,52 +1066,44 @@ compare-versions(){
     fi
 }
 
-identify-system(){
-    # OS distribution auto-detection
+identify_system() {
   if type lsb_release >/dev/null 2>&1; then
-      # linuxbase.org
-      ID=$(lsb_release -si)
-      OS=$(lsb_release -si)
-      VER=$(lsb_release -sr)
-  elif [ -f /etc/debian_version ]; then
-      # Older Debian/Ubuntu/etc.
-      ID=debian
-      OS=Debian
-      VER=$(cat /etc/debian_version)
-  elif [ -f /etc/lsb-release ]; then
-      # For Arch and some versions of Debian/Ubuntu without lsb_release command
-      . /etc/lsb-release
-      ID=$DISTRIB_ID
-      OS=$DISTRIB_ID
-      VER=$DISTRIB_RELEASE
-      VER=${VER:-$LSB_VERSION}
+    ID=$(lsb_release -si)
+    OS=$(lsb_release -si)
+    VER=$(lsb_release -sr)
   elif [ -f /etc/os-release ]; then
-      # freedesktop.org arch and systemd
-      . /etc/os-release
-      ID=${ID:-VERSION_ID}
-      ID=${ID:-VERSION}
-      OS=$NAME
-      VER=$VERSION_ID
-      VER=${VER:-$VERSION}
+    . /etc/os-release
+    ID=${ID:-$VERSION_ID}
+    ID=${ID:-$VERSION}
+    OS=$NAME
+    VER=$VERSION_ID
+    VER=${VER:-$VERSION}
+  elif [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    ID=$DISTRIB_ID
+    OS=$DISTRIB_ID
+    VER=$DISTRIB_RELEASE
+    VER=${VER:-$LSB_VERSION}
+  elif [ -f /etc/debian_version ]; then
+    ID=debian
+    OS=Debian
+    VER=$(cat /etc/debian_version)
   elif [ -f /etc/redhat-release ]; then
-      # Older Red Hat, CentOS, etc.
-      OS=$(cat /etc/redhat-release | awk '{print $1}')
+    OS=$(awk '{print $1}' /etc/redhat-release)
   else
-      # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-      OS=$(uname -s)
-      VER=$(uname -r)
+    OS=$(uname -s)
+    VER=$(uname -r)
   fi
 }
 
-ID(){
+ ID() {
   boxborder \
-  "ID: $ID" \
-  "OS: $OS" \
-  "VER: $VER"
+    "ID: $ID" \
+    "OS: $OS" \
+    "VER: $VER"
 }
 
-install_packages(){
-  # Separate package names and file arguments
+ install_packages() {
   declare -a packages=()
   declare -a offline_packages=()
   for arg in "$@"; do
@@ -1175,66 +1113,50 @@ install_packages(){
       packages+=("$arg")
     fi
   done
-  # Identify which distro is being run
-  identify-system
-
-  # Match distribution with available utilities
-  # TODO: Add package name transformer lists
-  case $ID in
+  identify_system
+   case $ID in
     amzn | centos | fedora | rhel)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        sudo yum install -y "${packages[@]}"
-      fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${packages[@]}"
-      fi
+      [ "${#packages[@]}" -gt 0 ] && run sudo yum install -y "${packages[@]}"
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -i "${packages[@]}"
       ;;
     arch | Arch | manjaro)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo pacman -Syu
-        sudo pacman -S "${packages[@]}"
+        run sudo pacman -Syu
+        run sudo pacman -S "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo pacman -U "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo pacman -U "${offline_packages[@]}"
       ;;
     debian | ubuntu | Ubuntu)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo apt-get update
-        sudo apt-get install "${packages[@]}"
+        run sudo apt-get update
+        run sudo apt-get install "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo dpkg -i "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo dpkg -i "${offline_packages[@]}"
       ;;
     opensuse | sles)
       if [ "${#packages[@]}" -gt 0 ]; then
-        sudo zypper refresh
-        sudo zypper install "${packages[@]}"
+        run sudo zypper refresh
+        run sudo zypper install "${packages[@]}"
       fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        sudo rpm -i "${offline_packages[@]}"
-      fi
+      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -i "${offline_packages[@]}"
       ;;
     slackware)
       if [ "${#packages[@]}" -gt 0 ]; then
         for package in "${packages[@]}"; do
-          sudo installpkg "$package"
+          run sudo installpkg "$package"
         done
       fi
       if [ "${#offline_packages[@]}" -gt 0 ]; then
         for package_file in "${offline_packages[@]}"; do
-          sudo installpkg "$package_file"
+          run sudo installpkg "$package_file"
         done
       fi
       ;;
     brew)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        brew install "${packages[@]}"
-      fi
+      [ "${#packages[@]}" -gt 0 ] && run brew install "${packages[@]}"
       if [ "${#offline_packages[@]}" -gt 0 ]; then
         for package_file in "${offline_packages[@]}"; do
-          brew install "$package_file"
+          run brew install "$package_file"
         done
       fi
       ;;
