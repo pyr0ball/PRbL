@@ -268,7 +268,7 @@ box-light(){
 
 repchar() {
   if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
-    warn "repcahr() Incorrect usage. Usage: rephar <char> <count>"
+    warn "repchar() Incorrect usage. Usage: repchar <char> <count>"
     return 1
   fi
   local char="$1"
