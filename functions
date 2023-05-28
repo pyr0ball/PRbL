@@ -299,10 +299,14 @@ set-boxtype(){
 #set-boxtype
 
 repchar() {
-  n=1
-  while [ $n -le $2 ] ; do
-    echo -n "$1"
-    n=$((n+1))
+  if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
+    warn "repcahr() Incorrect usage. Usage: rephar <char> <count>"
+    return 1
+  fi
+  local char="$1"
+  local count="$2"
+  for (( i=0; i<$count; i++ )); do
+    printf "%s" "$char"
   done
 }
 
@@ -331,8 +335,7 @@ boxline(){
 }
 
 boxseparator(){
-  repchar "$box_break_line" $((BOXWIDTH-3))
-  echo
+  printf '%s\n' "$(repchar "$box_break_line" $((BOXWIDTH-3)))"
 }
 
 boxborder(){
@@ -341,6 +344,12 @@ boxborder(){
     boxline "$line"
   done
   boxbottom
+}
+
+boxlinelog() {
+  local _cmd=${@:1}
+  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
+  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
 }
 
 boxborderlog(){
@@ -355,15 +364,39 @@ boxborderlog(){
   boxbottom
 }
 
-subboxborder(){
-  BOXWIDTH_ORG=$BOXWIDTH
-  BOXWIDTH=$(($BOXWIDTH*75/100))
-  boxline $(boxtop)
-  for line in "$@" ; do
-    boxline $(boxline "$line")
+subboxborder() {
+  level=${1:-0}
+  local indent=$((level*2))
+  local border_char="━"
+  local top_border=""
+  local bottom_border=""
+  
+  # Set the border characters based on the level of nesting
+  if ((level==0)); then
+    left_border="$left_top_border"
+    right_border="$right_top_border"
+    top_border="$rep_char $border_char $indent"
+    bottom_border="$rep_char $border_char $indent"
+  else
+    left_border="$left_border"
+    right_border="$right_border"
+    top_border="$rep_char $border_char $indent"
+    bottom_border="$rep_char $border_char $indent"
+  fi
+  
+  # Generate the top border
+  boxline "$(boxborder "$top_border")"
+  ((level++))
+  
+  # Generate the output lines
+  for line in "${@:2}" ; do
+    boxline "$(repchar " " $indent)$(boxline "$line")"
+    boxseparator
   done
-  boxline $(boxbottom)
-  BOXWIDTH=$BOXWIDTH_ORG
+  
+  # Generate the bottom border
+  ((level--))
+  boxline "$(boxborder "$bottom_border")"
 }
 
 # # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
