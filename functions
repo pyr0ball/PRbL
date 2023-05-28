@@ -324,36 +324,38 @@ boxborderlog(){
 subboxborder() {
   level=${1:-0}
   local indent=$((level*2))
-  local border_char="━"
-  local top_border=""
-  local bottom_border=""
-  
+
   # Set the border characters based on the level of nesting
   if ((level==0)); then
     left_border="$left_top_border"
     right_border="$right_top_border"
-    top_border="$rep_char $border_char $indent"
-    bottom_border="$rep_char $border_char $indent"
+    top_border="$(repchar $border_char $indent)"
+    bottom_border="$(repchar $border_char $indent)"
   else
     left_border="$left_border"
     right_border="$right_border"
-    top_border="$rep_char $border_char $indent"
-    bottom_border="$rep_char $border_char $indent"
+    top_border="$(repchar $border_char $indent)"
+    bottom_border="$(repchar $border_char $indent)"
   fi
-  
+
   # Generate the top border
-  boxline "$(boxborder "$top_border")"
+  boxtop
   ((level++))
-  
+
   # Generate the output lines
-  for line in "${@:2}" ; do
-    boxline "$(repchar " " $indent)$(boxline "$line")"
-    boxseparator
+  num_lines=$(($#-1))
+  for ((i=2; i<=num_lines; i++)) ; do
+    if ((i==num_lines)); then
+      boxline "$(repchar "\ " $indent)$(boxline "${!i}")"
+    else
+      boxline "$(repchar "\ " $indent)$(boxline "${!i}")"
+      boxbottom
+    fi
   done
-  
+
   # Generate the bottom border
   ((level--))
-  boxline "$(boxborder "$bottom_border")"
+  boxbottom
 }
 
 # # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
