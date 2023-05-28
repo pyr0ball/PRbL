@@ -253,6 +253,7 @@ box-light(){
  box-singlechar(){
   set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
 }
+
  set-boxtype(){
   case $boxtype in 
     norm)   box-norm ;;
@@ -298,7 +299,7 @@ boxseparator(){
   printf '%s\n' "$(repchar "$box_break_line" $((BOXWIDTH-3)))"
 }
 
- boxborder(){
+boxborder() {
   boxtop
   for line in "$@" ; do
     boxline "$line"
@@ -563,14 +564,14 @@ chained-grep(){
 }
 
 # Remove leading/trailing whitespace
-trim() {
+trim(){
   local var=${@:2}
   var="${var#"${var%%[![:space:]]*}"}"
   var="${var%"${var##*[![:space:]]}"}"
   printf '%s' "$var"
 }
 
-strip-html-tags() {
+strip-html-tags(){
   local input="$1"
   local stripped=$(echo "$input" | sed 's/<[^>]*>//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   echo "$stripped"
@@ -600,6 +601,22 @@ run-from-url(){
     run rm ${url##*/}
   fi
   return $ec
+}
+
+check-git-repository(){
+  repodir=${1:-$rundir}
+  if [ -z $repodir ] ; then
+    warn "check-git-repository() Incorrect usage. Usage: check-git-repository </path/to/dir>"
+    return 2
+  fi
+  if git -C "$repodir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Directory '$repodir' is a valid Git repository."
+    return 0
+    # Your script logic here
+  else
+    echo "Directory '$repodir' is not a valid Git repository"
+    return 1
+  fi
 }
 
 # fancy script exits
