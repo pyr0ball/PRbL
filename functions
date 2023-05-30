@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.6.0
+functionsrev=1.6.1
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -482,8 +482,9 @@ install-file(){
     if [[ $update_run == true ]] ; then
         run boxline "$scriptname: added file ${_destination_file} to list"
     else
-        run cp -p $_source $_destination_file && boxline "Installed ${_filename}" || warn "Unable to install ${_filename}"
-        run echo "${_destination_file}" >> $rundir/installed_files.list
+        mkdir -p "${_destination}"
+        run rsync -a --no-perms --no-owner --no-group "$source" "$destination_file" || warn "Unable to install ${_filename}"
+        run echo "${_destination_file}" >> "${rundir}/installed_files.list"
     fi
 }
 
@@ -500,11 +501,11 @@ install-dir() {
         # Create the parent directory of the destination file if it doesn't exist
         # Log the destination file path to the logfile
         #echo "$destination_file" >> "$logfile"
-        installed_files+=($destination_file)
+        installed_files+=("${destination_file}")
         if [[ $update_run == true ]] ; then
             run boxline "$scriptname: added file ${destination_file} to list"
         else
-            run mkdir -p "$(dirname "$destination_file")"
+            run mkdir -p "${_destination}"
             run cp -p ${_source}${_filename} $destination_file && boxline "Installed ${_filename}" || warn "Unable to install ${_filename}"
             run echo "${destination_file}" >> $rundir/installed_files.list
         fi
