@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.5.2
+functionsrev=1.6.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -253,6 +253,7 @@ box-light(){
  box-singlechar(){
   set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
 }
+
  set-boxtype(){
   case $boxtype in 
     norm)   box-norm ;;
@@ -267,8 +268,15 @@ box-light(){
 #set-boxtype
 
 repchar() {
-  local string=$(printf "%${2}s" "")
-  echo -n "${string// /$1}"
+  if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
+    warn "repchar() Incorrect usage. Usage: repchar <char> <count>"
+    return 1
+  fi
+  local char="$1"
+  local count="$2"
+  for (( i=0; i<$count; i++ )); do
+    printf "%s" "$char"
+  done
 }
 
  boxtop() {
@@ -287,11 +295,11 @@ repchar() {
   printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
 }
 
- boxseparator(){
-  printf "%s\n" "$(repchar "$box_break_line" "$((BOXWIDTH-3))")"
+boxseparator(){
+  printf '%s\n' "$(repchar "$box_break_line" $((BOXWIDTH-3)))"
 }
 
- boxborder(){
+boxborder() {
   boxtop
   for line in "$@" ; do
     boxline "$line"
@@ -299,7 +307,14 @@ repchar() {
   boxbottom
 }
 
- boxborderlog(){
+boxlinelog() {
+  local _cmd=${@:1}
+  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
+  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
+}
+
+boxborderlog(){
+  local _cmd=()
   boxtop
   for line in "$@" ; do
     boxlinelog "$line"
@@ -307,15 +322,39 @@ repchar() {
   boxbottom
 }
 
- subboxborder(){
-  local box_width_org="$BOXWIDTH"
-  BOXWIDTH=$(("$BOXWIDTH"*75/100))
-  boxline "$(boxtop)"
-  for line in "$@" ; do
-    boxline "$(boxline "$line")"
+subboxborder() {
+  level=${1:-0}
+  local indent=$((level*2))
+  local border_char="━"
+  local top_border=""
+  local bottom_border=""
+  
+  # Set the border characters based on the level of nesting
+  if ((level==0)); then
+    left_border="$left_top_border"
+    right_border="$right_top_border"
+    top_border="$rep_char $border_char $indent"
+    bottom_border="$rep_char $border_char $indent"
+  else
+    left_border="$left_border"
+    right_border="$right_border"
+    top_border="$rep_char $border_char $indent"
+    bottom_border="$rep_char $border_char $indent"
+  fi
+  
+  # Generate the top border
+  boxline "$(boxborder "$top_border")"
+  ((level++))
+  
+  # Generate the output lines
+  for line in "${@:2}" ; do
+    boxline "$(repchar " " $indent)$(boxline "$line")"
+    boxseparator
   done
-  boxline "$(boxbottom)"
-  BOXWIDTH="$box_width_org"
+  
+  # Generate the bottom border
+  ((level--))
+  boxline "$(boxborder "$bottom_border")"
 }
 
 # # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
@@ -326,10 +365,12 @@ repchar() {
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
 center(){
-  #local padding="";
-  padding="$(printf '%0.1s'  \ {1..100})"
-  #padding=" "
-  printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
+  local padding=""
+  padding="$(printf ' %.0s' {1..100})"
+  local string_length=${#1}
+  local padding_length=$(( (BOXWIDTH - 2 - string_length) / 2 ))
+  printf "%s%s %s %s%s\n" "$left_border" "${padding:0:padding_length}" "$1" "${padding:0:padding_length}" "$right_border"
+  #printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
   #printf "%s %s %s %s %s\n" "$left_border" "$padding" "$1" "$padding" "$right_border";
   #echo -en "\r${ESC}[$(((BOXWIDTH-${#1})/2))C$@\r${ESC}[${BOXWIDTH}C\n"
 }
@@ -475,7 +516,9 @@ install-dir() {
 success(){
   _line="$@"
   echo -e "\n"
-  boxborder "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxtop
+  boxline "${scriptname} ${grn}SUCCESS${dfl} ${_line}"
+  boxbottom
   exit 0
 }
 
@@ -521,16 +564,16 @@ chained-grep(){
 }
 
 # Remove leading/trailing whitespace
-trim() {
+trim(){
   local var=${@:2}
   var="${var#"${var%%[![:space:]]*}"}"
   var="${var%"${var##*[![:space:]]}"}"
   printf '%s' "$var"
 }
 
-strip-html-tags() {
+strip-html-tags(){
   local input="$1"
-  local stripped=$(echo "$input" | sed 's/<[^>]*>//g')
+  local stripped=$(echo "$input" | sed 's/<[^>]*>//g' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   echo "$stripped"
 }
 
@@ -558,6 +601,22 @@ run-from-url(){
     run rm ${url##*/}
   fi
   return $ec
+}
+
+check-git-repository(){
+  repodir=${1:-$rundir}
+  if [ -z $repodir ] ; then
+    warn "check-git-repository() Incorrect usage. Usage: check-git-repository </path/to/dir>"
+    return 2
+  fi
+  if git -C "$repodir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Directory '$repodir' is a valid Git repository."
+    return 0
+    # Your script logic here
+  else
+    echo "Directory '$repodir' is not a valid Git repository"
+    return 1
+  fi
 }
 
 # fancy script exits
