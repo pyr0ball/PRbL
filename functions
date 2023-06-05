@@ -742,42 +742,43 @@ set_spinner() {
   esac
 }
 
-spin() {
+spin(){
   CMD=$@
-  tput civis
+  tput civis || true # Ignore errors from tput if it's not supported
   sc=0
-  $CMD & 
+  ($CMD &> /dev/null) &
   _PID=$!
   while [ -d /proc/$_PID ] ; do
     for i in "${FRAME[@]}" ; do
-      printf "\b${FRAME:sc++:1}"
+      printf "\b%s" "${FRAME:sc++:1}"
       ((sc==${#FRAME})) && sc=0
-      #echo -ne "\b${FRAME[$i]}"
-      sleep $FRAME_INTERVAL
+      sleep "$FRAME_INTERVAL"
     done
   done
-  printf "\r\n"
-  tput cnorm
+  wait $_PID
+  if [ $? -ne 0 ]; then
+    echo "Command failed to execute"
+    return 1
+  fi
+  printf "\n"
+  tput cnorm || true # Ignore errors from tput if it's not supported
 }
 
 spinstart() {
-  sstop=false
-  tput civis
-  sc=0
-  until [[ $sstop != false ]] ; do
+  local FRAME=("$@") sc=0
+  while ! ${sstop:=false}; do
     for i in "${FRAME[@]}" ; do
-      printf "\b${FRAME:sc++:1}"
+      printf "\b%s" "${FRAME:sc++:1}"
       ((sc==${#FRAME})) && sc=0
-      #echo -ne "\b${FRAME[$i]}"
-      sleep $FRAME_INTERVAL
+      sleep "$FRAME_INTERVAL"
     done
   done
 }
 
 spinstop() {
-  export sstop=true
-  printf "\r\n"
-  tput cnorm
+  sstop=true
+  printf "\n"
+  tput cnorm || true # Ignore errors from tput if it's not supported
 }
 
 # https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
@@ -1083,7 +1084,7 @@ compare-versions(){
     fi
 }
 
-identify_system() {
+identify-system(){
   if type lsb_release >/dev/null 2>&1; then
     ID=$(lsb_release -si)
     OS=$(lsb_release -si)
@@ -1120,7 +1121,7 @@ identify_system() {
     "VER: $VER"
 }
 
- install_packages() {
+ install-packages() {
   declare -a packages=()
   declare -a offline_packages=()
   for arg in "$@"; do
@@ -1130,7 +1131,7 @@ identify_system() {
       packages+=("$arg")
     fi
   done
-  identify_system
+  identify-system
    case $ID in
     amzn | centos | fedora | rhel)
       [ "${#packages[@]}" -gt 0 ] && run sudo yum install -y "${packages[@]}"
