@@ -1083,7 +1083,7 @@ compare-versions(){
     fi
 }
 
-identify_system() {
+identify-system() {
   if type lsb_release >/dev/null 2>&1; then
     ID=$(lsb_release -si)
     OS=$(lsb_release -si)
@@ -1120,7 +1120,7 @@ identify_system() {
     "VER: $VER"
 }
 
- install_packages() {
+ install-packages() {
   declare -a packages=()
   declare -a offline_packages=()
   for arg in "$@"; do
@@ -1130,7 +1130,7 @@ identify_system() {
       packages+=("$arg")
     fi
   done
-  identify_system
+  identify-system
    case $ID in
     amzn | centos | fedora | rhel)
       [ "${#packages[@]}" -gt 0 ] && run sudo yum install -y "${packages[@]}"
