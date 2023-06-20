@@ -2,7 +2,9 @@
 # pyr0ball script functions library
 
 # Initial Vars
+functionsrev=1.6.2
 functionsrev=1.6.0
+functionsrev=1.6.2
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #rundir_absolute=$(cd $rundir && pwd)
@@ -416,7 +418,9 @@ run-and-log(){
     if [[ $dry_run != true ]] ; then
         logger $_cmd
     else
+        logger boxline "DryRun: $_cmd"
         logger "DryRun: $_cmd"
+        logger boxline "DryRun: $_cmd"
     fi
 }
 
