@@ -3,16 +3,14 @@
 
 # Initial Vars
 functionsrev=1.6.3
-functionsrev=1.6.2
-functionsrev=1.6.0
-functionsrev=1.6.2
-functionsrev=1.6.3
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
-#rundir_absolute=$(cd $rundir && pwd)
 #runuser="$(whoami)"
 pretty_date="$(date +%Y-%m-%d_%H-%M-%S)"
 short_date="$(date +%Y-%m-%d)"
+# rundir_absolute=$(pushd $rundir ; pwd ; popd)
+# escape_dir=$(printf %q "${rundir_absolute}")
+# logfile="${rundir}/${pretty_date}_${scriptname}.log"
 
 # ensure ctrl-c to cancel script ends the entire process and not just the current function
 # trap ctrl_c INT # Commented out by default to prevent abnormal background exits
@@ -409,19 +407,8 @@ popdfail(){
 run(){
     _cmd=$@
     if [[ $dry_run != true ]] ; then
-        $_cmd
-    else
-        boxline "DryRun: $_cmd"
-    fi
-}
-
-run-and-log(){
-    _cmd=$@
-    if [[ $dry_run != true ]] ; then
         logger $_cmd
     else
-        logger boxline "DryRun: $_cmd"
-        logger "DryRun: $_cmd"
         logger boxline "DryRun: $_cmd"
     fi
 }
@@ -594,37 +581,19 @@ run-from-url(){
   interpreter=$(curl -ks $url | head -n 1 | sed -n -e 's\/\#//g' 2>/dev/null)
   # boxline "interpreter=$interpreter"
   # In case of missing shebang, default to local shells
-  # In case of missing shebang, default to bash
-  # In case of missing shebang, default to local shells
   if [ -z $interpreter ] ; then
     if [ -x /bin/bash ] ; then
-    if [ -x /bin/bash ] ; then
-      interpreter="/bin/bash"
-    interpreter="/bin/bash"
       interpreter="/bin/bash"
     elif [ -x /bin/sh ] ; then
       interpreter="/bin/sh"
     elif [ -x /bin/zsh ] ; then
       interpreter="/bin/zsh"
-    elif [ -x /bin/sh ] ; then
-      interpreter="/bin/sh"
-    elif [ -x /bin/zsh ] ; then
-      interpreter="/bin/zsh"
     fi
-  fi
-    fi
-  fi
-  logger boxline "Running online script $url with args $args"
-  boxline "Running online script $url with args $args"
   fi
   logger boxline "Running online script $url with args $args"
   if [[ "$interpreter" == "/bin/bash" ]] ; then
     run curl -H 'Cache-Control: no-cache' -kLs $url | $interpreter -s -- $args
-    run curl -H 'Cache-Control: no-cache' -ks $url | $interpreter -s -- $args
-    run curl -H 'Cache-Control: no-cache' -kLs $url | $interpreter -s -- $args
   else
-    run curl -H 'Cache-Control: no-cache' -kLs $url > ${url##*/}
-    run curl -H 'Cache-Control: no-cache' -ks $url > ${url##*/}
     run curl -H 'Cache-Control: no-cache' -kLs $url > ${url##*/}
     run $interpreter ${url##*/} $args 
     ec=$?
@@ -1095,6 +1064,7 @@ vercomp() {
 }
 
 check-prbl-version(){
+  # TODO: Finish writing this function
   vercomp 
 }
 
@@ -1113,7 +1083,7 @@ compare-versions(){
     fi
 }
 
-identify-system() {
+identify-system(){
   if type lsb_release >/dev/null 2>&1; then
     ID=$(lsb_release -si)
     OS=$(lsb_release -si)
@@ -1143,14 +1113,14 @@ identify-system() {
   fi
 }
 
- ID() {
+ID(){
   boxborder \
     "ID: $ID" \
     "OS: $OS" \
     "VER: $VER"
 }
 
- install-packages() {
+install-packages(){
   declare -a packages=()
   declare -a offline_packages=()
   for arg in "$@"; do
@@ -1176,7 +1146,7 @@ identify-system() {
     debian | ubuntu | Ubuntu)
       if [ "${#packages[@]}" -gt 0 ]; then
         run sudo apt-get update
-        run sudo apt-get install "${packages[@]}"
+        run sudo apt-get install -y "${packages[@]}"
       fi
       [ "${#offline_packages[@]}" -gt 0 ] && run sudo dpkg -i "${offline_packages[@]}"
       ;;
@@ -1204,63 +1174,6 @@ identify-system() {
       if [ "${#offline_packages[@]}" -gt 0 ]; then
         for package_file in "${offline_packages[@]}"; do
           run brew install "$package_file"
-        done
-      fi
-      ;;
-  esac
-}
-
-check-packages(){
-  declare -a packages=()
-  declare -a offline_packages=()
-  for arg in "$@"; do
-    if [[ -f $arg ]]; then
-      offline_packages+=("$arg")
-    else
-      packages+=("$arg")
-    fi
-  done
-  identify-system
-   case $ID in
-    amzn | centos | fedora | rhel)
-      [ "${#packages[@]}" -gt 0 ] && run sudo yum list installed "${packages[@]}"
-      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -q "${packages[@]}"
-      ;;
-    arch | Arch | manjaro)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        run sudo pacman -Qs "${packages[@]}"
-      fi
-      [ "${#offline_packages[@]}" -gt 0 ] && run sudo pacman -Q "${offline_packages[@]}"
-      ;;
-    debian | ubuntu | Ubuntu)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        run sudo dpkg -s "${packages[@]}"
-      fi
-      [ "${#offline_packages[@]}" -gt 0 ] && run sudo dpkg -s "${offline_packages[@]}"
-      ;;
-    opensuse | sles)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        run sudo zypper se "${packages[@]}"
-      fi
-      [ "${#offline_packages[@]}" -gt 0 ] && run sudo rpm -q "${offline_packages[@]}"
-      ;;
-    slackware)
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          run sudo slackpkg search "$package"
-        done
-      fi
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          run sudo slackpkg search "$package_file"
-        done
-      fi
-      ;;
-    brew)
-      [ "${#packages[@]}" -gt 0 ] && run brew list "${packages[@]}"
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          run brew list "$package_file"
         done
       fi
       ;;
