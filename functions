@@ -1207,8 +1207,10 @@ install-packages(){
 check-packages(){
   # Utilizes system package manager to check for installed packages
   # Declare arrays for online and offline packages
-  declare -a packages=()
+  declare -a online_packages=()
   declare -a offline_packages=()
+  unset available_version
+  unset installed_version
    # Separate online and offline packages
   for arg in "$@"; do
     if [[ -f $arg ]]; then
