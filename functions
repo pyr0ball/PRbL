@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.6.4
+functionsrev=1.7.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -1049,23 +1049,42 @@ vercomp() {
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
-        then
-            # version 1 is greater than version 2
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
-        then
-          # version 1 is less than version 2
-            return 2
-        fi
+        local IFS=-:
+        local j ver1_parts=(${ver1[i]}) ver2_parts=(${ver2[i]})
+        for ((j=0; j<${#ver1_parts[@]}; j++))
+        do
+            if [[ -z ${ver2_parts[j]} ]]
+            then
+                # fill empty fields in ver2 with zeros
+                ver2_parts[j]=0
+            fi
+            if [[ ${ver1_parts[j]} =~ ^[0-9]+$ ]] && [[ ${ver2_parts[j]} =~ ^[0-9]+$ ]]
+            then
+                if ((10#${ver1_parts[j]} > 10#${ver2_parts[j]}))
+                then
+                    # version 1 is greater than version 2
+                    return 1
+                fi
+                if ((10#${ver1_parts[j]} < 10#${ver2_parts[j]}))
+                then
+                    # version 1 is less than version 2
+                    return 2
+                fi
+            else
+                if [[ ${ver1_parts[j]} > ${ver2_parts[j]} ]]
+                then
+                    # version 1 is greater than version 2
+                    return 1
+                fi
+                if [[ ${ver1_parts[j]} < ${ver2_parts[j]} ]]
+                then
+                    # version 1 is less than version 2
+                    return 2
+                fi
+            fi
+        done
     done
     return 0
-}
-
-check-prbl-version(){
-  # TODO: Finish writing this function
-  vercomp 
 }
 
 compare-versions(){
@@ -1081,6 +1100,11 @@ compare-versions(){
     else
         echo "Pass: '$1 $op $2'"
     fi
+}
+
+check-prbl-version(){
+  # TODO: Finish writing this function
+  vercomp 
 }
 
 identify-system(){
@@ -1180,9 +1204,9 @@ install-packages(){
   esac
 }
 
-check-packages() {
+check-packages(){
   # Utilizes system package manager to check for installed packages
-   # Declare arrays for online and offline packages
+  # Declare arrays for online and offline packages
   declare -a packages=()
   declare -a offline_packages=()
    # Separate online and offline packages
@@ -1190,194 +1214,208 @@ check-packages() {
     if [[ -f $arg ]]; then
       offline_packages+=("$arg")
     else
-      packages+=("$arg")
+      online_packages+=("$arg")
     fi
   done
    # Identify the system
   identify-system
-   # Check packages based on system type
-  case $ID in
-    amzn | centos | fedora | rhel)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if yum list installed "$package" >/dev/null 2>&1; then
-            installed_version=$(yum list installed "$package" | grep "$package" | awk '{print $2}')
-            available_version=$(yum list available "$package" | grep "$package" | awk '{print $2}')
-            if [ "$installed_version" = "$available_version" ]; then
-              return 0
-            elif [ "$installed_version" \> "$available_version" ]; then
-              return 3
-            else
-              return 1
-            fi
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if rpm -q --quiet "$package_file"; then
-            installed_version=$(rpm -q "$package_file" --qf "%{VERSION}")
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-    arch | Arch | manjaro)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if pacman -Q "$package" >/dev/null 2>&1; then
-            installed_version=$(pacman -Q "$package" | awk '{print $2}')
-            available_version=$(pacman -Si "$package" | grep "Version" | awk '{print $3}')
-            if [ "$installed_version" = "$available_version" ]; then
-              return 0
-            elif [ "$installed_version" \> "$available_version" ]; then
-              return 3
-            else
-              return 1
-            fi
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if pacman -Qp "$package_file" >/dev/null 2>&1; then
-            installed_version=$(pacman -Qp "$package_file" | awk '{print $2}')
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-    debian | ubuntu | Ubuntu)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if dpkg -s "$package" >/dev/null 2>&1; then
-            installed_version=$(dpkg -s "$package" | grep -E "^Version:" | awk '{print $2}')
-            available_version=$(apt-cache show "$package" | grep -E "^Version:" | awk '{print $2}')
-            if [ "$installed_version" = "$available_version" ]; then
-              return 0
-            elif [ "$installed_version" \> "$available_version" ]; then
-              return 3
-            else
-              return 1
-            fi
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if dpkg -I "$package_file" >/dev/null 2>&1; then
-            installed_version=$(dpkg -I "$package_file" | grep -E "^ Version:" | awk '{print $3}')
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-    opensuse | sles)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if zypper info "$package" >/dev/null 2>&1; then
-            installed_version=$(zypper info "$package" | grep "Version" | awk '{print $3}')
-            available_version=$(zypper se -i "$package" | grep "Version" | awk '{print $3}')
-            if [ "$installed_version" = "$available_version" ]; then
-              return 0
-            elif [ "$installed_version" \> "$available_version" ]; then
-              return 3
-            else
-              return 1
-            fi
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if rpm -q --quiet "$package_file"; then
-            installed_version=$(rpm -q "$package_file" --qf "%{VERSION}")
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-    slackware)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if slackpkg search "$package" >/dev/null 2>&1; then
-            installed_version=$(slackpkg search "$package" | awk '{print $3}')
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if slackpkg search "$package_file" >/dev/null 2>&1; then
-            installed_version=$(slackpkg search "$package_file" | awk '{print $3}')
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-    brew)
-      # Check online packages
-      if [ "${#packages[@]}" -gt 0 ]; then
-        for package in "${packages[@]}"; do
-          if brew list "$package" >/dev/null 2>&1; then
-            installed_version=$(brew list --versions "$package" | awk '{print $2}')
-            available_version=$(brew info "$package" | head -n 1 | awk '{print $3}')
-            if [ "$installed_version" = "$available_version" ]; then
-              return 0
-            elif [ "$installed_version" \> "$available_version" ]; then
-              return 3
-            else
-              return 1
-            fi
-          else
-            return 2
-          fi
-        done
-      fi
-       # Check offline packages
-      if [ "${#offline_packages[@]}" -gt 0 ]; then
-        for package_file in "${offline_packages[@]}"; do
-          if brew list "$package_file" >/dev/null 2>&1; then
-            installed_version=$(brew list --versions "$package_file" | awk '{print $2}')
-            return 0
-          else
-            return 2
-          fi
-        done
-      fi
-      ;;
-  esac
+  if [ "${#online_packages[@]}" -gt 0 ] ; then
+    # Check packages based on system type
+    case $ID in
+      amzn | centos | fedora | rhel)
+        check-online-package-redhat "${online_packages[@]}"
+        ;;
+      arch | Arch | manjaro)
+        check-online-package-arch "${online_packages[@]}"
+        ;;
+      debian | ubuntu | Ubuntu)
+        check-online-package-debian "${online_packages[@]}"
+        ;;
+      opensuse | sles)
+        check-online-package-opensuse "${online_packages[@]}"
+        ;;
+      slackware)
+        check-online-package-slackware "${online_packages[@]}"
+        ;;
+      brew)
+        check-online-package-brew "${online_packages[@]}"
+        ;;
+    esac
+  fi
+
+  if [ "${#offline_packages[@]}" -gt 0 ] ; then
+    # Check offline packages based on system type
+    case $ID in
+      amzn | centos | fedora | rhel)
+        check-offline-package-redhat "${offline_packages[@]}"
+        ;;
+      arch | Arch | manjaro)
+        check-offline-package-arch "${offline_packages[@]}"
+        ;;
+      debian | ubuntu | Ubuntu)
+        check-offline-package-debian "${offline_packages[@]}"
+        ;;
+      opensuse | sles)
+        check-offline-package-opensuse "${offline_packages[@]}"
+        ;;
+      slackware)
+        check-offline-package-slackware "${offline_packages[@]}"
+        ;;
+      brew)
+        check-offline-package-brew "${offline_packages[@]}"
+        ;;
+    esac
+  fi
 }
 
+check-online-packages-redhat() {
+  local package=$1
+  if yum list installed "$package" >/dev/null 2>&1; then
+    installed_version=$(yum list installed "$package" | grep "$package" | awk '{print $2}')
+    available_version=$(yum list available "$package" | grep "$package" | awk '{print $2}' | head -n 1)
+    local _package_status=$(vercomp $installed_version $available_version)
+    return $_package_status
+  else
+    return 1
+  fi
+}
+
+check-offline-package-redhat() {
+  local package_file=$1
+  if rpm -q --quiet "$package_file"; then
+    installed_version=$(rpm -q "$package_file" --qf "%{VERSION}")
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-online-package-arch(){
+  local package=$1
+  if pacman -Q "$package" >/dev/null 2>&1; then
+    installed_version=$(pacman -Q "$package" | awk '{print $2}')
+    available_version=$(pacman -Si "$package" | grep "Version" | awk '{print $3}' | head -n 1)
+    local _package_status=$(vercomp $installed_version $available_version)
+    return $_package_status
+  else
+    return 1
+  fi
+}
+
+check-offline-package-arch(){
+  local package_file=$1
+  if pacman -Qp "$package_file" >/dev/null 2>&1; then
+    installed_version=$(pacman -Qp "$package_file" | awk '{print $2}')
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-online-package-debian(){
+  local package=$1
+  if dpkg -s "$package" >/dev/null 2>&1; then
+    installed_version=$(dpkg -s "$package" | grep -E "^Version:" | awk '{print $2}')
+    available_version=$(apt-cache show "$package" | grep -E "^Version:" | awk '{print $2}' | head -n 1)
+    local _package_status=$(vercomp $installed_version $available_version)
+    return $_package_status
+  else
+    return 1
+  fi
+}
+
+check-offline-package-debian(){
+  local package_file=$1
+  if dpkg -I "$package_file" >/dev/null 2>&1; then
+    installed_version=$(dpkg -I "$package_file" | grep -E "^ Version:" | awk '{print $3}')
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-online-package-opensuse(){
+  local package=$1
+  if zypper info "$package" >/dev/null 2>&1; then
+    installed_version=$(zypper info "$package" | grep "Version" | awk '{print $3}')
+    available_version=$(zypper se -i "$package" | grep "Version" | awk '{print $3}' | head -n 1)
+    local _package_status=$(vercomp $installed_version $available_version)
+    return $_package_status
+  else
+    return 1
+  fi
+}
+
+check-offline-package-opensuse(){
+  local package_file=$1
+  if rpm -q --quiet "$package_file"; then
+    installed_version=$(rpm -q "$package_file" --qf "%{VERSION}")
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-online-package-slackware(){
+  local package=$1
+  if slackpkg search "$package" >/dev/null 2>&1; then
+    installed_version=$(slackpkg search "$package" | awk '{print $3}')
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-offline-package-slackware(){
+  local package_file=$1
+  if slackpkg search "$package_file" >/dev/null 2>&1; then
+    installed_version=$(slackpkg search "$package_file" | awk '{print $3}')
+    return 0
+  else
+    return 1
+  fi
+}
+
+check-online-package-brew(){
+  local package=$1
+  if brew list "$package" >/dev/null 2>&1; then
+    installed_version=$(brew list --versions "$package" | awk '{print $2}')
+    available_version=$(brew info "$package" | head -n 1 | awk '{print $3}' | head -n 1)
+    vercomp $installed_version $available_version
+    local _package_status=$?
+    return $_package_status
+  else
+    return 1
+  fi
+}
+
+check-offline-package-brew(){
+  local package_file=$1
+  if brew list "$package_file" >/dev/null 2>&1; then
+    installed_version=$(brew list --versions "$package_file" | awk '{print $2}')
+    return 0
+  else
+    return 1
+  fi
+}
+
+package-diags(){
+  local _packages=$@
+  for package in $_packages ; do
+    check-packages $package
+    vercomp $installed_version $available_version
+    local _package_status=$?
+    case $_package_status in
+      0)  logger boxline "Package $package: i:${installed_version} = a:${available_version}"
+          ;;
+      1)  logger boxline "Package $package is not currently installed. Available version: ${available_version}"
+          ;;
+      2)  logger boxline "Package $package: i:${installed_version} < a:${available_version}"
+          ;;
+      3)  logger boxline "Package $package: i:${installed_version} > a:${available_version}"
+          ;;
+    esac
+  done
+}
 
 set-boxtype
