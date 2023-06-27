@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.7.1
+functionsrev=1.7.2
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -32,6 +32,32 @@ case $OSTYPE in
   cygwin ) ESC=$( printf '\033') ;;
   msys ) ESC=$( printf '\033') ;;
 esac
+
+include-prbl(){
+  srcfile=$1
+  srcfile_name=${srcfile##*/}
+  source $(dirname ${prbl_functions})/$srcfile
+  PRBL-INCLUDED[$srcfile_name]=true
+}
+
+include(){
+  srcfile=$1
+  srcfile_name=${srcfile##*/}
+  source $srcfile
+  INCLUDED[$srcfile_name]=true
+}
+
+requires(){
+  srcfile=$1
+  srcfile_name=${srcfile##*/}
+  if [[ PRBL-INCLUDED[$srcfile_name] != true ]] ; then
+    include-prbl $srcfile
+  fi
+  if [[ INCLUDED[$srcfile_name] != true ]] ; then
+    include $srcfile
+  fi
+}
+
 
 # Utilities (Setting up colors and bounding boxes)
 
@@ -658,7 +684,7 @@ prbl-logo(){
 
 # Function for spinner status
 # usage: spin "command [args]"
-set_spinner() {
+set-spinner() {
   case $1 in
     spinner1)
       FRAME="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -736,23 +762,30 @@ set_spinner() {
       FRAME="┤┘┴└├┌┬┐"
       FRAME_INTERVAL=0.1
       ;;
+    spinner20)
+      FRAME="🌑🌒🌓🌔🌕🌖🌗🌘"
+      FRAME_INTERVAL=0.1
+      ;;
+    spinner21)
+      FRAME="🌍🌎🌏"
+      FRAME_INTERVAL=0.2
+      ;;
     *)
       warn "No spinner is defined for $1"
   esac
 }
 
 spin() {
-  CMD=$@
+  CMD="$*"
   tput civis
   sc=0
-  $CMD & 
+  "$CMD" &
   _PID=$!
-  while [ -d /proc/$_PID ] ; do
-    for i in "${FRAME[@]}" ; do
+   while kill -0 $_PID >/dev/null 2>&1; do
+    for ((i=0; i<${#FRAME}; i++)); do
       printf "\b${FRAME:sc++:1}"
       ((sc==${#FRAME})) && sc=0
-      #echo -ne "\b${FRAME[$i]}"
-      sleep $FRAME_INTERVAL
+      sleep "$FRAME_INTERVAL"
     done
   done
   printf "\r\n"
@@ -798,6 +831,8 @@ printf "\rProgress : [${_done// /#}${_left// /-}] ${_progress}%%"
 
 # Menu functions
 
+# This is a custom implementation of select() that improves portability
+# and allows for custom styling
 # Renders a text based list of options that can be selected by the
 # user using up, down and enter keys and returns the chosen option.
 #

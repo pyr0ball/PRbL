@@ -132,7 +132,7 @@ for option in "${my_options[@]}"; do
 done
 
 # Spinner
-for i in {1..19} ; do
+for i in {1..21} ; do
    boxborder "spinner$i demo"
    set_spinner spinner$i
    spin "sleep 3"
