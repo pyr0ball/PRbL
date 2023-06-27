@@ -684,7 +684,7 @@ prbl-logo(){
 
 # Function for spinner status
 # usage: spin "command [args]"
-set-spinner() {
+set_spinner() {
   case $1 in
     spinner1)
       FRAME="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -776,20 +776,19 @@ set-spinner() {
 }
 
 spin() {
-  CMD="$*"
   tput civis
   sc=0
-  "$CMD" &
-  _PID=$!
-   while kill -0 $_PID >/dev/null 2>&1; do
-    for ((i=0; i<${#FRAME}; i++)); do
-      printf "\b${FRAME:sc++:1}"
-      ((sc==${#FRAME})) && sc=0
-      sleep "$FRAME_INTERVAL"
-    done
+  "$@" &> /dev/null &
+  SPIN_PID=$!
+  trap "kill $SPIN_PID 2>/dev/null" EXIT
+  while kill -0 $SPIN_PID >/dev/null 2>&1; do
+    printf "\b${FRAME:sc++:1}"
+    ((sc==${#FRAME})) && sc=0
+    sleep "$FRAME_INTERVAL"
   done
-  printf "\r\n"
+  printf "\r\033[K"
   tput cnorm
+  trap - EXIT
 }
 
 spinstart() {
