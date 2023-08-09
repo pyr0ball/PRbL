@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=1.6.4
+functionsrev=1.7.0
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -282,11 +282,11 @@ repchar() {
 }
 
  boxtop() {
-  printf "%s%s%s\n" "$left_top_border" "$(repchar "$top_border" "$((BOXWIDTH-1))")" "$right_top_border"
+  printf "%s%s%s\n" "${brdr}$left_top_border" "$(repchar "$top_border" "$((BOXWIDTH-1))")" "$right_top_border${dfl}"
 }
 
  boxbottom() {
-  printf "%s%s%s\n" "$left_bottom_border" "$(repchar "$bottom_border" "$((BOXWIDTH-1))")" "$right_bottom_border"
+  printf "%s%s%s\n" "${brdr}$left_bottom_border" "$(repchar "$bottom_border" "$((BOXWIDTH-1))")" "$right_bottom_border${dfl}"
 }
 
  boxlinelog() {
@@ -294,11 +294,11 @@ repchar() {
 }
 
  boxline(){
-  printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
+  printf "%s%s\r${ESC}[%sC%s\n" "${brdr}$left_border${dfl}" "$1" "$BOXWIDTH" "${brdr}$right_border${dfl}"
 }
 
 boxseparator(){
-  printf '%s\n' "$(repchar "$box_break_line" $((BOXWIDTH-3)))"
+  printf '%s%s%s\n' "${brdr}" "$(repchar "$box_break_line" $((BOXWIDTH-3)))" "${dfl}"
 }
 
 boxborder() {
