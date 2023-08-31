@@ -686,6 +686,7 @@ prbl-logo(){
 
 # Function for spinner status
 # usage: spin "command [args]"
+# TODO: Add colorchange effects
 set_spinner() {
   case $1 in
     spinner1)

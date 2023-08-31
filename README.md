@@ -1,7 +1,15 @@
 pyr0-bash-functions
 ===============
 
-A functions library for bash-like scripting
+A functions library for bash-like scripting.
+
+An easy installation script:
+
+```bash
+curl -kL 'https://raw.githubusercontent.com/pyr0ball/PRbL-bashrc/main/install.sh' > install-prbl.sh
+chmod +x install-prbl-sh
+./install-prbl-sh -i
+```
 
 Includes:
 
@@ -10,6 +18,10 @@ Includes:
 - Bounding Box Drawing
 - Logging
 - User-interactable menus
+- Progress bar
+- Spinner Implementation
+- Rudimentary Unix/Linux dependency and package management
+- OS-Agnostic functions and ports
 
 With all of these tools combined, you can make powerful interactive scripts with ease and pleasant form
 
