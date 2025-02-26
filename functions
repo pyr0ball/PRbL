@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=2.0.1
+functionsrev=2.0.2
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -244,14 +244,31 @@ box-light(){
   set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
 }
 
- set-boxtype(){
-  case $boxtype in 
+set-boxtype() {
+  # Accept a parameter if provided, otherwise use the global variable
+  local style="${1:-$boxtype}"
+  
+  # Update the global variable to match what we're using
+  boxtype="$style"
+  
+  # Ensure characters are defined
+  set_box_chars
+  update_terminal_width
+  
+  # Set the box style
+  case $style in 
     norm)   box-norm ;;
     double) box-double ;;
     heavy)  box-heavy ;;
-    light)   box-light ;;
+    light)  box-light ;;
     rounded) box-rounded ;;
     char)   box-singlechar ;;
+    *)      
+      # Handle unknown box types by falling back to normal
+      echo "Warning: Unknown box type '$style', falling back to 'norm'" >&2
+      boxtype="norm"
+      box-norm 
+      ;;
   esac
 }
 
