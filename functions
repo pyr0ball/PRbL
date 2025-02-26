@@ -287,6 +287,46 @@ set-boxtype() {
   esac
 }
 
+format_boxborder() {
+    local alignment="left"
+    local box_type="norm"
+    
+    # Parse options
+    while [[ "$1" == --* ]]; do
+        case "$1" in
+            --center)
+                alignment="center"
+                ;;
+            --right)
+                alignment="right"
+                ;;
+            --box-type=*)
+                box_type="${1#--box-type=}"
+                ;;
+        esac
+        shift
+    done
+    
+    # Set box type
+    set-boxtype
+    
+    boxtop
+    for line in "$@"; do
+        case "$alignment" in
+            center)
+                center "$line"
+                ;;
+            right)
+                right_align "$line"
+                ;;
+            *)
+                boxline "$line"
+                ;;
+        esac
+    done
+    boxbottom
+}
+
 update_terminal_width
 set-boxtype
 
@@ -314,14 +354,6 @@ repchar() {
     printf -v result "%*s" "$count" ""
     echo "${result// /$char}"
 }
-test_boxtop() {
-  echo "Debug - BOXWIDTH: $BOXWIDTH" >&2
-  echo "Debug - top_border: '$top_border'" >&2
-  echo "Debug - left_top_border: '$left_top_border'" >&2
-  local rep_result=$(repchar "$top_border" "$((BOXWIDTH-1))")
-  echo "Debug - repchar result: '$rep_result'" >&2
-  printf "%s%s%s\n" "${brdr}$left_top_border" "$rep_result" "$right_top_border${dfl}"
-}
 
  boxtop() {
   printf "%s%s%s\n" "${brdr}$left_top_border" "$(repchar "$top_border" "$((BOXWIDTH-1))")" "$right_top_border${dfl}"
@@ -348,7 +380,7 @@ boxseparator(){
   printf '%s%s%s\n' "${brdr}" "$(repchar "$box_break_line" $((BOXWIDTH-3)))" "${dfl}"
 }
 
-boxborder() {
+boxborder(){
   boxtop
   for line in "$@" ; do
     boxline "$line"
@@ -356,21 +388,7 @@ boxborder() {
   boxbottom
 }
 
-boxlinelog() {
-  local _cmd=${@:1}
-  #echo -e "$left_border $(logger echo -e "${1}")\r${ESC}[${BOXWIDTH}C$right_border"
-  logger echo -e "$left_border $_cmd\r${ESC}[${BOXWIDTH}C$right_border"
-}
-
-boxborderlog(){
-  local _cmd=()
-  boxtop
-  for line in "$@" ; do
-    boxlinelog "$line"
-  done
-  boxbottom
-}
-
+# Experimental!
 subboxborder() {
   level=${1:-0}
   local indent=$((level*2))
@@ -449,6 +467,39 @@ center() {
         "$left_pad" \
         "$text" \
         "$right_pad" \
+        "$right_border"
+}
+
+right_align() {
+    local text="$1"
+    # Early return for non-interactive/debug mode
+    if (( !interactive )) || (( xtrace )); then
+        printf "%s %s\n" "$text"
+        return
+    fi
+
+    # Calculate available inner width (total width minus borders)
+    local inner_width=$(( BOXWIDTH - 2 ))
+    local text_length=$(get_visual_length "$text")
+
+    # If text is too long, just print it with borders
+    if (( text_length >= inner_width )); then
+        printf "%s%s%s\n" "$left_border" "$text" "$right_border"
+        return
+    fi
+
+    # Calculate padding size
+    local padding=$(( inner_width - text_length ))
+
+    # Create padding string
+    local pad
+    printf -v pad "%*s" "$padding" ""
+
+    # Print with consistent borders
+    printf "%s%s%s%s\n" \
+        "$left_border" \
+        "$pad" \
+        "$text" \
         "$right_border"
 }
 
