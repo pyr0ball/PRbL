@@ -27,10 +27,8 @@ ESC=$( printf '\033')
 
 # Detect OS type
 case $OSTYPE in 
-  linux-gnu* ) ESC=$( printf '\033') ;;
+  linux-gnu*|cygwin|msys) ESC=$( printf '\033') ;;
   darwin* ) ESC=$( printf '\e') ;;
-  cygwin ) ESC=$( printf '\033') ;;
-  msys ) ESC=$( printf '\033') ;;
 esac
 
 # Utilities (Setting up colors and bounding boxes)
@@ -75,33 +73,101 @@ if [[ "$TERM" != "linux" ]] ; then
   dfl="${ESC}[0m"    # restore default
 fi
 
-# Extra Unicode Character Manipulation
-case $OSTYPE in 
-    linux-gnu*|cygwin|msys)
-    return_arrow=$(echo -e "\u2BAC")
-    enter_arrow=$(echo -e "\u21B5")
-    green_check=${grn}$(echo -e "\u2714")${dfl}
-    red_x=${lrd}$(echo -e "\u00D7")${dfl}
-    selected_opt=$(echo -e "\u25C9")
-    deselected_opt=$(echo -e "\u25CE")
-  ;;&
-  darwin* )
-    return_arrow=$(echo -e "⮬")
-    enter_arrow=$(echo -e "↵")
-    green_check=${grn}$(echo -e "✔")${dfl}
-    red_x=${lrd}$(echo -e "×")${dfl}
-    selected_opt=$(echo -e "◉")
-    deselected_opt=$(echo -e "◎")
-  ;;
-esac
+check_unicode_support() {
+    # Check if LANG indicates UTF-8
+    [[ "${LANG,,}" == *".utf-8"* || "${LANG,,}" == *".utf8"* ]] || return 1
+    
+    # Check if terminal can display Unicode
+    echo -ne "\u2714" >/dev/null 2>&1 || return 1
+    
+    return 0
+}
+
+box_chars_simple() {
+    # Simple ASCII box characters
+    top_border="-"
+    bottom_border="-"
+    left_border="|"
+    right_border="|"
+    left_top_border="+"
+    right_top_border="+"
+    left_bottom_border="+"
+    right_bottom_border="+"
+    box_break_line="-"
+}
+
+set_box_chars() {
+    if check_unicode_support; then
+        case "$OSTYPE" in 
+            linux-gnu*|cygwin|msys)
+                return_arrow=$(echo -e "\u2BAC")
+                enter_arrow=$(echo -e "\u21B5")
+                green_check=${grn}$(echo -e "\u2714")${dfl}
+                red_x=${lrd}$(echo -e "\u00D7")${dfl}
+                selected_opt=$(echo -e "\u25C9")
+                deselected_opt=$(echo -e "\u25CE")
+                light_h='─'
+                norm_h='━'
+                double_h='═'
+                light_v='│'
+                norm_v='┃'
+                double_v='║'
+                ;;
+            darwin*)
+                return_arrow="⮬"
+                return_arrow=$(echo -e "⮬")
+                enter_arrow=$(echo -e "↵")
+                green_check=${grn}$(echo -e "✔")${dfl}
+                red_x=${lrd}$(echo -e "×")${dfl}
+                selected_opt=$(echo -e "◉")
+                deselected_opt=$(echo -e "◎")
+                light_h='─'
+                norm_h='━'
+                double_h='═'
+                light_v='│'
+                norm_v='┃'
+                double_v='║'
+                ;;
+            *)
+                # Fallback to simple ASCII if OS is unknown
+                return_arrow=">"
+                green_check="+"
+                red_x="x"
+                selected_opt="*"
+                deselected_opt="o"
+                ;;
+        esac
+    else
+        # ASCII fallbacks
+        return_arrow=">"
+        enter_arrow="<"
+        green_check="+"
+        red_x="x"
+        selected_opt="*"
+        deselected_opt="o"
+        box_chars_simple
+    fi
+}
 
 # For drawing pretty boxes
-terminal_width=$(tput cols)
-if [ $terminal_width -le 81 ] ; then
-  BOXWIDTH=$((terminal_width - 1))
-else
-  BOXWIDTH=80
-fi
+update_terminal_width() {
+    local min_width=40  # Minimum usable width
+    local default_width=80
+    
+    # Try to get terminal width, fallback to default if failed
+    terminal_width=$(tput cols 2>/dev/null || echo "$default_width")
+    
+    # Ensure minimum width
+    if (( terminal_width < min_width )); then
+        terminal_width=$min_width
+    fi
+    
+    # Set box width with 1 character margin
+    BOXWIDTH=$((terminal_width - 1))
+}
+
+# Add trap for terminal resize
+trap 'update_terminal_width' WINCH
 
  set_borders() {
   top_border=$1
@@ -115,70 +181,7 @@ fi
   box_break_line=$9
 }
 
-# # Box Drawing characters
-# case $OSTYPE in 
-#     linux-gnu*|cygwin|msys) 
-#     light_h='\u2500'
-#     norm_h='\u2501'
-#     double_h='\u2550'
-#     light_v='\u2502'
-#     norm_v='\u2503'
-#     double_v='\u2551'
-#   ;;&
-#   darwin* )
-#     light_h='─'
-#     norm_h='━'
-#     double_h='═'
-#     light_v='│'
-#     norm_v='┃'
-#     double_v='║'
-#   ;;
-# esac
-
-#  # Box border type single-line
-# box-norm() {
-#   case $OSTYPE in 
-#     linux-gnu*|cygwin|msys)
-#       set_borders "${norm_h}" "${norm_h}" "${norm_v}" "${norm_v}" "\u250f" "\u2513" "\u2517" "\u251b" "\u25AB"
-#       set_borders "${double_h}" "${double_h}" "${double_v}" "${double_v}" "\u2554" "\u2557" "\u255A" "\u255D" "\u25AB"
-#       set_borders "\u2580" "\u2584" "\u258C" "\u2590" "\u259B" "\u259C" "\u2599" "\u259F" "\u25AB"
-#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u25AB" "\u25AB" "\u25AB" "\u25AB" "\u23AF"
-#       set_borders "${light_h}" "${light_h}" "${light_v}" "${light_v}" "\u256D" "\u256E" "\u2570" "\u256F" "\u25A2"
-
-
-# Box Drawing characters
-case $OSTYPE in 
-    linux-gnu*|cygwin|msys) 
-    light_h='─'
-    norm_h='━'
-    double_h='═'
-    light_v='│'
-    norm_v='┃'
-    double_v='║'
-  ;;&
-  darwin* )
-    light_h='─'
-    norm_h='━'
-    double_h='═'
-    light_v='│'
-    norm_v='┃'
-    double_v='║'
-  ;;
-esac
-
- set_borders() {
-  top_border=$1
-  bottom_border=$2
-  left_border=$3
-  right_border=$4
-  left_top_border=$5
-  right_top_border=$6
-  left_bottom_border=$7
-  right_bottom_border=$8
-  box_break_line=$9
-}
-
- # Box border type single-line
+# Box border type single-line
 box-norm() {
   case $OSTYPE in 
     linux-gnu*|cygwin|msys)
@@ -270,15 +273,12 @@ box-light(){
 #set-boxtype
 
 repchar() {
-  if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
-    warn "repchar() Incorrect usage. Usage: repchar <char> <count>"
-    return 1
-  fi
-  local char="$1"
-  local count="$2"
-  for (( i=0; i<$count; i++ )); do
-    printf "%s" "$char"
-  done
+    if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
+        warn "repchar() Incorrect usage. Usage: repchar <char> <count>"
+        return 1
+    fi
+    printf -v result "%*s" "$2" ""
+    echo "${result// /$1}"
 }
 
  boxtop() {
@@ -290,11 +290,16 @@ repchar() {
 }
 
  boxlinelog() {
-  logger printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$1" "$BOXWIDTH" "$right_border"
+  local content="$1"
+  logger printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$content" "$BOXWIDTH" "$right_border"
 }
 
- boxline(){
-  printf "%s%s\r${ESC}[%sC%s\n" "${brdr}$left_border${dfl}" "$1" "$BOXWIDTH" "${brdr}$right_border${dfl}"
+boxline() {
+    local content="$1"
+    if ! printf "%s%s\r${ESC}[%sC%s\n" "$left_border" "$content" "$BOXWIDTH" "$right_border" 2>/dev/null; then
+        # Fallback to simple output if fancy formatting fails
+        printf "%s %s %s\n" "$left_border" "$content" "$right_border"
+    fi
 }
 
 boxseparator(){
@@ -359,32 +364,97 @@ subboxborder() {
   boxline "$(boxborder "$bottom_border")"
 }
 
-# # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
-# center() {
-#   padding="$(printf '%0.1s'  {1..500})"
-#   printf '%*.*s %s %*.*s\n' 0 "$(((terminal_width-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
-# }
+# Helper function to get visual length of string (accounting for ANSI escape codes)
+get_visual_length() {
+    local text="$1"
+    # Remove ANSI escape sequences and count remaining characters
+    local stripped
+    stripped=$(printf "%s" "$text" | sed 's/\x1b\[[0-9;]*m//g')
+    printf "%s" "${#stripped}"
+}
 
 # For printing center-justified text. To change the padding character, replace the ' ' <~~ whitespace in front of the '{' in the padding variable
-center(){
-  local padding=""
-  padding="$(printf ' %.0s' {1..100})"
-  local string_length=${#1}
-  local padding_length=$(( (BOXWIDTH - 2 - string_length) / 2 ))
-  printf "%s %s %s\n" "${padding:0:padding_length}" "$1" "${padding:0:padding_length}"
-  #printf '%*.*s %s %*.*s\n' 0 "$(((BOXWIDTH-2-${#1})/2))" "${left_border}${padding}" "$1" 0 "$(((BOXWIDTH-1-${#1})/2))" "${padding}${right_border}"
-  #printf "%s %s %s %s %s\n" "$left_border" "$padding" "$1" "$padding" "$right_border";
-  #echo -en "\r${ESC}[$(((BOXWIDTH-${#1})/2))C$@\r${ESC}[${BOXWIDTH}C\n"
+center() {
+    local text="$1"
+    # Early return for non-interactive/debug mode
+    if (( !interactive )) || (( xtrace )); then
+        printf "%s %s\n" "$text"
+        return
+    fi
+
+    # Calculate available inner width (total width minus borders)
+    local inner_width=$(( BOXWIDTH - 2 ))
+    local text_length=$(get_visual_length "$text")
+
+    # If text is too long, just print it with borders
+    if (( text_length >= inner_width )); then
+        printf "%s%s%s\n" "$left_border" "$text" "$right_border"
+        return
+    fi
+
+    # Calculate padding sizes
+    local padding_left=$(( (inner_width - text_length) / 2 ))
+    local padding_right=$(( inner_width - text_length - padding_left ))
+
+    # Create padding strings
+    local left_pad right_pad
+    printf -v left_pad "%*s" "$padding_left" ""
+    printf -v right_pad "%*s" "$padding_right" ""
+
+    # Print with consistent borders
+    printf "%s%s%s%s%s\n" \
+        "$left_border" \
+        "$left_pad" \
+        "$text" \
+        "$right_pad" \
+        "$right_border"
 }
 
 # For printing spanned text, e.g. single-pair lists ($name...$title)
 spanner() {
-  # 1: left-side-text, 2: right-side-text
-  # Spanner character:
-  spacer="."
-  local _spanner="";
-  eval printf -v _spanner \'"%0.1s"\' "$spacer"{1..$[$((BOXWIDTH-1))- 2 - ${#1} - ${#2}]}
-  printf "%s %s %s\n" "$1" "$_spanner" "$2";
+    local left="$1"
+    local right="$2"
+    local spacer="${3:-.}"  # Default to dot if no spacer provided
+    
+    # Early return for non-interactive/debug mode
+    if (( !interactive )) || (( xtrace )); then
+        printf "%s %s\n" "$left" "$right"
+        return
+    fi
+
+    # Calculate available inner width (total width minus borders)
+    local inner_width=$(( BOXWIDTH - 2 ))
+    local left_length=$(get_visual_length "$left")
+    local right_length=$(get_visual_length "$right")
+    
+    # Minimum space between left and right text
+    local min_space=1
+    
+    # Calculate space needed for spacer
+    local spacer_width=$(( inner_width - left_length - right_length ))
+    
+    # If not enough space, just print with minimal formatting
+    if (( spacer_width < min_space )); then
+        printf "%s%s %s%s\n" \
+            "$left_border" \
+            "$left" \
+            "$right" \
+            "$right_border"
+        return
+    fi
+    
+    # Create spacer string
+    local spacer_string
+    printf -v spacer_string "%*s" "$spacer_width" ""
+    spacer_string=${spacer_string// /$spacer}
+    
+    # Print with consistent borders
+    printf "%s%s%s%s%s\n" \
+        "$left_border" \
+        "$left" \
+        "$spacer_string" \
+        "$right" \
+        "$right_border"
 }
 
 # Workflow and logging
