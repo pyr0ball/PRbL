@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=2.0.0
+functionsrev=2.0.1
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -273,12 +273,28 @@ box-light(){
 #set-boxtype
 
 repchar() {
-    if [[ $# -ne 2 || ! $2 =~ ^[0-9]+$ ]]; then
-        warn "repchar() Incorrect usage. Usage: repchar <char> <count>"
-        return 1
+    # More robust parameter checking
+    if [[ $# -lt 2 ]]; then
+        echo "Error: repchar() Incorrect usage. Usage: repchar <char> <count>" >&2
+        # Return a safe fallback instead of failing
+        echo "----"
+        return 0
     fi
-    printf -v result "%*s" "$2" ""
-    echo "${result// /$1}"
+    
+    local char="$1"
+    local count="$2"
+    
+    # Validate count is a number
+    if ! [[ "$count" =~ ^[0-9]+$ ]]; then
+        echo "Error: repchar() count must be a number. Got: '$count'" >&2
+        # Return a safe fallback instead of failing
+        echo "----"
+        return 0
+    fi
+    
+    # Create and output the repeated character string
+    printf -v result "%*s" "$count" ""
+    echo "${result// /$char}"
 }
 
  boxtop() {
