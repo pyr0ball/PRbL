@@ -1535,6 +1535,311 @@ check-packages() {
   esac
 }
 
+# Power Monitoring Functions for PRbL
+
+################################
+# Detect and query power usage from various sources
+# - NVIDIA GPUs via nvidia-smi
+# - AMD GPUs via rocm-smi
+# - System-wide power via RAPL (Running Average Power Limit)
+# - ACPI battery information
+# - Power supply information via hwmon
+################################
+
+# Main function to get system power information
+get_power_info() {
+  # Initialize variables
+  total_power=0
+  cpu_power="N/A"
+  gpu_power="N/A"
+  system_power="N/A"
+  battery_power="N/A"
+  power_sources=()
+  power_values=()
+  power_units=()
+
+  # Try each method and collect the data
+  get_nvidia_power
+  get_amd_power
+  get_rapl_power
+  get_acpi_power
+  get_hwmon_power
+  
+  # Calculate total known power
+  if [[ "$total_power" -gt 0 ]]; then
+    system_power="${total_power}W"
+  fi
+  
+  # Return results in variables
+  # These variables will be available after calling this function:
+  # - system_power: Total system power if available
+  # - cpu_power: CPU power consumption if available
+  # - gpu_power: GPU power consumption if available
+  # - battery_power: Battery charging/discharging rate if available
+  # - power_sources: Array of power source names
+  # - power_values: Array of power values (numeric)
+  # - power_units: Array of power units (W, mW, etc.)
+  return 0
+}
+
+# Get NVIDIA GPU power information using nvidia-smi
+get_nvidia_power() {
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    # Get power usage for all NVIDIA GPUs
+    local gpu_count=$(nvidia-smi --query-gpu=count --format=csv,noheader,nounits)
+    local total_gpu_power=0
+    
+    for ((i=0; i<gpu_count; i++)); do
+      # Get power draw and power limit for this GPU
+      local power_draw=$(nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits -i $i)
+      local power_limit=$(nvidia-smi --query-gpu=power.limit --format=csv,noheader,nounits -i $i)
+      local gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader -i $i | cut -c -20)
+      
+      # Check if the value is valid (not N/A or empty)
+      if [[ "$power_draw" != "N/A" && -n "$power_draw" ]]; then
+        # Convert to integer watts for consistency (removing decimal)
+        local power_int=$(printf "%.0f" "$power_draw")
+        total_gpu_power=$((total_gpu_power + power_int))
+        
+        # Add to the arrays
+        power_sources+=("NVIDIA GPU $i ($gpu_name)")
+        power_values+=($power_int)
+        power_units+=("W")
+      fi
+    done
+    
+    if [[ $total_gpu_power -gt 0 ]]; then
+      gpu_power="${total_gpu_power}W"
+      total_power=$((total_power + total_gpu_power))
+    fi
+  fi
+}
+
+# Get AMD GPU power information using rocm-smi
+get_amd_power() {
+  if command -v rocm-smi >/dev/null 2>&1; then
+    # Get power usage for all AMD GPUs
+    local total_amd_power=0
+    
+    # Parse the output of rocm-smi to get power readings
+    local power_data=$(rocm-smi --showpower)
+    
+    # Process each line to extract power values
+    while IFS= read -r line; do
+      if [[ "$line" == *"Average Graphics Package Power"* ]]; then
+        local power_val=$(echo "$line" | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+        if [[ -n "$power_val" ]]; then
+          local power_int=$(printf "%.0f" "$power_val")
+          total_amd_power=$((total_amd_power + power_int))
+          
+          # Extract GPU ID
+          local gpu_id=$(echo "$line" | grep -oE 'GPU\[[0-9]+\]' | grep -oE '[0-9]+')
+          
+          # Add to the arrays
+          power_sources+=("AMD GPU $gpu_id")
+          power_values+=($power_int)
+          power_units+=("W")
+        fi
+      fi
+    done <<< "$power_data"
+    
+    if [[ $total_amd_power -gt 0 ]]; then
+      if [[ -n "$gpu_power" && "$gpu_power" != "N/A" ]]; then
+        # If we already have NVIDIA GPU power, add this to it
+        local current_power=$(echo $gpu_power | grep -oE '[0-9]+')
+        gpu_power="$((current_power + total_amd_power))W"
+      else
+        gpu_power="${total_amd_power}W"
+      fi
+      total_power=$((total_power + total_amd_power))
+    fi
+  fi
+}
+
+# Get CPU and memory power information using RAPL (Running Average Power Limit)
+get_rapl_power() {
+  # Check if RAPL sysfs entries exist
+  if [ -d /sys/class/powercap/intel-rapl ]; then
+    local total_cpu_power=0
+    
+    # Find all energy meters
+    local rapl_dirs=$(find /sys/class/powercap/intel-rapl -type d -name "intel-rapl:*")
+    
+    for dir in $rapl_dirs; do
+      # Check if this is a CPU package or a domain within a package
+      local name=""
+      if [ -f "$dir/name" ]; then
+        name=$(cat "$dir/name")
+      fi
+      
+      # Only process packages and memory controller, not subdomains like core or uncore
+      if [[ "$name" == "package-"* || "$name" == "psys" || "$name" == "dram" ]]; then
+        # Get microjoules over time to calculate power
+        if [ -f "$dir/energy_uj" ]; then
+          local start_uj=$(cat "$dir/energy_uj")
+          sleep 0.5
+          local end_uj=$(cat "$dir/energy_uj")
+          
+          # Calculate power in watts: microjoules to watts = (end-start)/(time in microseconds)
+          local power_w=$(echo "scale=1; ($end_uj - $start_uj) / 500000" | bc)
+          
+          # If microjoule counter wrapped around (rare but possible)
+          if (( $(echo "$power_w < 0" | bc -l) )); then
+            continue
+          fi
+          
+          local power_int=$(printf "%.0f" "$power_w")
+          
+          # Add to total and arrays
+          total_cpu_power=$((total_cpu_power + power_int))
+          
+          power_sources+=("RAPL $name")
+          power_values+=($power_int)
+          power_units+=("W")
+        fi
+      fi
+    done
+    
+    if [[ $total_cpu_power -gt 0 ]]; then
+      cpu_power="${total_cpu_power}W"
+      total_power=$((total_power + total_cpu_power))
+    fi
+  fi
+}
+
+# Get battery power information from ACPI
+get_acpi_power() {
+  # Check if system has a battery
+  if [ -d /sys/class/power_supply ]; then
+    local batteries=$(find /sys/class/power_supply -type d -name "BAT*")
+    local total_battery_power=0
+    
+    for battery in $batteries; do
+      # Check if power information is available
+      if [ -f "$battery/power_now" ]; then
+        # Power now is in microwatts
+        local power_uw=$(cat "$battery/power_now")
+        local power_w=$(echo "scale=1; $power_uw / 1000000" | bc)
+        local power_int=$(printf "%.0f" "$power_w")
+        
+        # Get battery status (charging/discharging)
+        local status="unknown"
+        if [ -f "$battery/status" ]; then
+          status=$(cat "$battery/status")
+        fi
+        
+        # Add to arrays
+        local bat_name=$(basename "$battery")
+        power_sources+=("Battery $bat_name ($status)")
+        power_values+=($power_int)
+        power_units+=("W")
+        
+        total_battery_power=$((total_battery_power + power_int))
+      fi
+    done
+    
+    if [[ $total_battery_power -gt 0 ]]; then
+      battery_power="${total_battery_power}W"
+      # We don't add battery power to total_power as it might be redundant with system power
+    fi
+  fi
+}
+
+# Get power supply information from hwmon
+get_hwmon_power() {
+  # Check for hwmon power information
+  if [ -d /sys/class/hwmon ]; then
+    for hwmon_dir in /sys/class/hwmon/hwmon*; do
+      if [ -f "$hwmon_dir/name" ]; then
+        local device_name=$(cat "$hwmon_dir/name")
+        
+        # Look for power sensors (usually in_*_input or power*_input)
+        for power_file in "$hwmon_dir"/power*_input "$hwmon_dir"/in*_input; do
+          if [ -f "$power_file" ]; then
+            local label_file="${power_file/_input/_label}"
+            local power_label="$device_name"
+            
+            if [ -f "$label_file" ]; then
+              power_label=$(cat "$label_file")
+            fi
+            
+            # Read the power value
+            local power_val=$(cat "$power_file")
+            local power_unit="mW" # Most hwmon power values are in milliwatts
+            
+            # Convert to watts for consistency if needed
+            local power_w=$power_val
+            if [[ "$power_unit" == "mW" ]]; then
+              power_w=$(echo "scale=1; $power_val / 1000" | bc)
+            fi
+            
+            local power_int=$(printf "%.0f" "$power_w")
+            
+            # Only include reasonable values
+            if [[ $power_int -gt 0 && $power_int -lt 2000 ]]; then
+              power_sources+=("PSU $power_label")
+              power_values+=($power_int)
+              power_units+=("W")
+              
+              # Don't add to total as it might double-count
+              # total_power=$((total_power + power_int))
+            fi
+          fi
+        done
+      fi
+    done
+  fi
+}
+
+# Format the power info for display
+format_power_info() {
+  local show_details=${1:-false}
+  
+  if [[ "$system_power" != "N/A" || "$cpu_power" != "N/A" || "$gpu_power" != "N/A" ]]; then
+    echo "${bld}Power Usage:${dfl}"
+    
+    if [[ "$system_power" != "N/A" ]]; then
+      echo "	${bld}System:${dfl} ${ong}${system_power}${dfl}"
+    fi
+    
+    if [[ "$cpu_power" != "N/A" ]]; then
+      echo "	${bld}CPU:${dfl} ${lrd}${cpu_power}${dfl}"
+    fi
+    
+    if [[ "$gpu_power" != "N/A" ]]; then
+      echo "	${bld}GPU:${dfl} ${lrd}${gpu_power}${dfl}"
+    fi
+    
+    if [[ "$battery_power" != "N/A" ]]; then
+      echo "	${bld}Battery:${dfl} ${ylw}${battery_power}${dfl}"
+    fi
+    
+    # Show detailed breakdown if requested
+    if [[ "$show_details" == "true" && ${#power_sources[@]} -gt 0 ]]; then
+      echo "	${bld}${unl}Power Details:${dfl}"
+      
+      for ((i=0; i<${#power_sources[@]}; i++)); do
+        printf "	%-25s %3d%s\n" "${power_sources[$i]}:" "${power_values[$i]}" "${power_units[$i]}"
+      done
+    fi
+    
+    return 0
+  else
+    echo "${bld}Power Usage:${dfl} Not available"
+    return 1
+  fi
+}
+
+# Test function to output all power information
+test_power_monitoring() {
+  get_power_info
+  boxborder $(format_power_info true)
+}
+
+# Example usage:
+# get_power_info
+# boxborder $(format_power_info)
+
 set_box_chars
 update_terminal_width
 set-boxtype
