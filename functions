@@ -2,7 +2,7 @@
 # pyr0ball script functions library
 
 # Initial Vars
-functionsrev=2.1.1
+functionsrev=2.1.2
 #scriptname="${BASH_SOURCE[0]##*/}"
 #rundir="${BASH_SOURCE[0]%/*}"
 #runuser="$(whoami)"
@@ -168,7 +168,6 @@ update_terminal_width() {
     
     # Set box width with 1 character margin
     BOXWIDTH=$((terminal_width - 1))
-
 }
 
 # Add trap for terminal resize
@@ -279,17 +278,6 @@ set-boxtype() {
 
  box-singlechar(){
   set_borders "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "$borderchar" "-"
-}
-
- set-boxtype(){
-  case $boxtype in 
-    norm)   box-norm ;;
-    double) box-double ;;
-    heavy)  box-heavy ;;
-    light)   box-light ;;
-    rounded) box-rounded ;;
-    char)   box-singlechar ;;
-  esac
 }
 
 format_boxborder() {
