@@ -152,6 +152,7 @@ set_box_chars() {
 # For drawing pretty boxes
 update_terminal_width() {
     local min_width=40  # Minimum usable width
+    local max_width=100 # Maximum usable width
     local default_width=80
     
     # Try to get terminal width, fallback to default if failed
@@ -161,9 +162,13 @@ update_terminal_width() {
     if (( terminal_width < min_width )); then
         terminal_width=$min_width
     fi
+    if (( terminal_width > max_width )); then
+        terminal_width=$max_width
+    fi
     
     # Set box width with 1 character margin
     BOXWIDTH=$((terminal_width - 1))
+
 }
 
 # Add trap for terminal resize
